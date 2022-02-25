@@ -23,7 +23,7 @@ export default defineConfig({
             target: process.env.VITE_REPORTING_API,
             changeOrigin: true
          },
-         '/api/.*': {
+         '/api': {
             target: process.env.VITE_REPORTING_API,
             changeOrigin: true
          },

@@ -27,27 +27,10 @@ func main() {
 	router.Use(cors.Default())
 	router.GET("/version", svc.getVersion)
 	router.GET("/healthcheck", svc.healthCheck)
-	/*api := router.Group("/api")
+	api := router.Group("/api")
 	{
-		api.GET("/components/:id", svc.authMiddleware, svc.getComponent)
-
-		api.GET("/projects", svc.authMiddleware, svc.getProjects)
-		api.GET("/projects/:id", svc.authMiddleware, svc.getProject)
-		api.PUT("/projects/:id", svc.authMiddleware, svc.updateProject)
-		api.POST("/projects/:id/assign/:uid", svc.authMiddleware, svc.assignProject)
-		api.POST("/projects/:id/equipment", svc.authMiddleware, svc.setProjectEquipment)
-		api.POST("/projects/:id/note", svc.authMiddleware, svc.addNote)
-		api.POST("/projects/:id/start", svc.authMiddleware, svc.startProjectStep)
-		api.POST("/projects/:id/finish", svc.authMiddleware, svc.finishProjectStep)
-		api.POST("/projects/:id/reject", svc.authMiddleware, svc.rejectProjectStep)
-
-		api.GET("/units/:uid/masterfiles", svc.authMiddleware, svc.getUnitMasterFiles)
-		api.POST("/units/:uid/finalize", svc.finalizeUnitRequest) // TODO retire this when tracksys workflow is retired
-		api.POST("/units/:uid/update", svc.authMiddleware, svc.updateMetadata)
-		api.POST("/units/:uid/rename", svc.authMiddleware, svc.renameFiles)
-		api.DELETE("/units/:uid/:file", svc.authMiddleware, svc.deleteFile)
-		api.POST("/units/:uid/:file/rotate", svc.authMiddleware, svc.rotateFile)
-	}*/
+		api.GET("/stats/image", svc.getImageStats)
+	}
 
 	// Note: in dev mode, this is never actually used. The front end is served
 	// by yarn and it proxies all requests to the API to the routes above
