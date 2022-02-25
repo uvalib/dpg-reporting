@@ -11,7 +11,7 @@ export const useReportStore = defineStore('report', {
 	actions: {
 		getVersion() {
          axios.get("/version").then(response => {
-            this.version = `${response.data.version}-build-${response.data.build}`
+            this.version = `v${response.data.version}-${response.data.build}`
          }).catch(e => {
             console.error(e)
          })

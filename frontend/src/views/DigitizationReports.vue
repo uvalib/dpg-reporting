@@ -1,5 +1,5 @@
 <template>
   <main>
-    <h2>DPG Statistics</h2>
+    <h2>Digitization Reports</h2>
   </main>
 </template>
