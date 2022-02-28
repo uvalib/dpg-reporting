@@ -19,6 +19,7 @@
       </div>
       <div class="stats">
       <ImageStats />
+      <StorageStats />
       </div>
    </main>
 </template>
@@ -27,6 +28,7 @@
 import Datepicker from 'vue3-datepicker'
 import {useReportStore} from '@/stores/reporting'
 import ImageStats from '../components/ImageStats.vue'
+import StorageStats from '../components/StorageStats.vue';
 const reportStore = useReportStore()
 
 // function getAllClicked() {

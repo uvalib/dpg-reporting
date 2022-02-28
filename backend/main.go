@@ -30,6 +30,7 @@ func main() {
 	api := router.Group("/api")
 	{
 		api.GET("/stats/image", svc.getImageStats)
+		api.GET("/stats/storage", svc.getStorageStats)
 	}
 
 	// Note: in dev mode, this is never actually used. The front end is served
