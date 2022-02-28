@@ -1,17 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (svc *serviceContext) getImageStats(c *gin.Context) {
-	// expected query format: start=2022-02-17&end=2022-02-28
 	log.Printf("INFO: get image statistics")
-	startDateStr := c.Query("start")
-	endDateStr := c.Query("end")
+	dateQStr := c.Query("date")
+	if (strings.Contains(dateQStr, "TO") || strings.Contains(dateQStr, "AFTER") || strings.Contains(dateQStr, "BEFORE")) == false {
+		log.Printf("ERROR: invalid date query [%s]", dateQStr)
+		c.String(http.StatusBadRequest, fmt.Sprintf("%s is not valid", dateQStr))
+		return
+	}
 
 	var imageResp struct {
 		All  int64 `json:"all"`
@@ -22,14 +27,16 @@ func (svc *serviceContext) getImageStats(c *gin.Context) {
 	// all, dl, dpla
 	for i := 0; i < 3; i++ {
 		cntQuery := svc.GDB.Debug().Table("master_files")
-		if startDateStr != "" {
-			if endDateStr != "" {
-				cntQuery = cntQuery.Where("master_files.created_at >= ? and master_files.created_at <= ?", startDateStr, endDateStr)
-				log.Printf("INFO: get image counts between %s - %s", startDateStr, endDateStr)
-			} else {
-				log.Printf("INFO: get image counts before %s", startDateStr)
-				cntQuery = cntQuery.Where("master_files.created_at <== ?", startDateStr)
-			}
+
+		if strings.Contains(dateQStr, "TO") {
+			bits := strings.Split(dateQStr, " ")
+			cntQuery = cntQuery.Where("master_files.created_at >= ? and master_files.created_at <= ?", bits[0], bits[2])
+		} else if strings.Contains(dateQStr, "AFTER") {
+			bits := strings.Split(dateQStr, " ")
+			cntQuery = cntQuery.Where("master_files.created_at >= ?", bits[1])
+		} else if strings.Contains(dateQStr, "BEFORE") {
+			bits := strings.Split(dateQStr, " ")
+			cntQuery = cntQuery.Where("master_files.created_at <= ?", bits[1])
 		}
 
 		count := &imageResp.All
