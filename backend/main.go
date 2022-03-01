@@ -31,6 +31,7 @@ func main() {
 	{
 		api.GET("/stats/image", svc.getImageStats)
 		api.GET("/stats/storage", svc.getStorageStats)
+		api.GET("/stats/metadata", svc.getMetadataStats)
 	}
 
 	// Note: in dev mode, this is never actually used. The front end is served

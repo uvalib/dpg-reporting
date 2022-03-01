@@ -20,6 +20,19 @@ export const useReportStore = defineStore('report', {
 			DL: 0,
 			rangeText: "",
 			loading: false,
+		},
+		metadataStats: {
+			total: 0,
+			sirsi: 0,
+			xml: 0,
+			totalDL: 0,
+			sirsiDL: 0,
+			xmlDL: 0,
+			totalDPLA: 0,
+			sirsiDPLA: 0,
+			xmlDPLA: 0,
+			rangeText: "",
+			loading: false,
 		}
 	}),
 	getters: {
@@ -67,6 +80,31 @@ export const useReportStore = defineStore('report', {
 			}).catch(e => {
             this.error = e
 				this.storageStats.loading = false
+         })
+		},
+
+		getMetadataSats() {
+			let dateParam = getDateParam(this.dateRangeType, this.startDate, this.endDate)
+			let url = "/api/stats/metadata"
+			if (dateParam != "") {
+				url += "?date="+encodeURIComponent(dateParam)
+			}
+			this.metadataStats.rangeText = dateParam
+			this.metadataStats.loading = true
+			axios.get(url).then(response => {
+				this.metadataStats.total = response.data.all.total
+				this.metadataStats.sirsi = response.data.all.sirsi
+				this.metadataStats.xml = response.data.all.xml
+				this.metadataStats.totalDL = response.data.DL.total
+				this.metadataStats.sirsiDL = response.data.DL.sirsi
+				this.metadataStats.xmlDL = response.data.DL.xml
+				this.metadataStats.totalDPLA = response.data.DPLA.total
+				this.metadataStats.sirsiDPLA = response.data.DPLA.sirsi
+				this.metadataStats.xmlDPLA = response.data.DPLA.xml
+				this.metadataStats.loading = false
+			}).catch(e => {
+            this.error = e
+				this.metadataStats.loading = false
          })
 		}
 	}

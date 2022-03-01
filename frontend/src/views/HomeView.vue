@@ -18,8 +18,9 @@
          <!-- <button class="all-btn" @click="getAllClicked">Get All Statistics</button> -->
       </div>
       <div class="stats">
-      <ImageStats />
-      <StorageStats />
+         <ImageStats />
+         <StorageStats />
+         <MetadataStats />
       </div>
    </main>
 </template>
@@ -29,6 +30,7 @@ import Datepicker from 'vue3-datepicker'
 import {useReportStore} from '@/stores/reporting'
 import ImageStats from '../components/ImageStats.vue'
 import StorageStats from '../components/StorageStats.vue';
+import MetadataStats from '../components/MetadataStats.vue';
 const reportStore = useReportStore()
 
 // function getAllClicked() {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,6 +62,87 @@ func (svc *serviceContext) getImageStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, imageResp)
+}
+
+func (svc *serviceContext) getMetadataStats(c *gin.Context) {
+	log.Printf("INFO: get metadata statistics")
+	dateQStr := c.Query("date")
+	if (strings.Contains(dateQStr, "TO") || strings.Contains(dateQStr, "AFTER") || strings.Contains(dateQStr, "BEFORE")) == false {
+		log.Printf("ERROR: invalid date query [%s]", dateQStr)
+		c.String(http.StatusBadRequest, fmt.Sprintf("%s is not valid", dateQStr))
+		return
+	}
+
+	type metadata struct {
+		ID           int64
+		Type         string
+		DateDLIngest *time.Time `gorm:"column:date_dl_ingest"`
+		DPLA         bool       `gorm:"column:dpla"`
+	}
+	type metadataDetail struct {
+		Total int64 `json:"total"`
+		SIRSI int64 `json:"sirsi"`
+		XML   int64 `json:"xml"`
+	}
+	var metadataResp struct {
+		All  metadataDetail `json:"all"`
+		DL   metadataDetail `json:"DL"`
+		DPLA metadataDetail `json:"DPLA"`
+	}
+
+	var mdRecs []metadata
+	mdQ := svc.GDB.Select("id", "type", "date_dl_ingest", "dpla")
+	if strings.Contains(dateQStr, "TO") {
+		bits := strings.Split(dateQStr, " ")
+		log.Printf("INFO: get metadata records between [%s] and [%s]", bits[0], bits[2])
+		mdQ.Where("created_at >= ? and created_at <= ?", bits[0], bits[2])
+	} else if strings.Contains(dateQStr, "AFTER") {
+		bits := strings.Split(dateQStr, " ")
+		mdQ.Where("created_at >= ?", bits[1])
+		log.Printf("INFO: get metadata records after [%s]", bits[1])
+	} else if strings.Contains(dateQStr, "BEFORE") {
+		bits := strings.Split(dateQStr, " ")
+		log.Printf("INFO: get metadata records before [%s]", bits[1])
+		mdQ.Where("created_at <= ?", bits[1])
+	}
+
+	// get all the MD recs in the requested date range...
+	err := mdQ.Find(&mdRecs).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get metadata statistics: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// ...then split up the counts based on metadata type, DL and DPLA
+	for _, md := range mdRecs {
+		metadataResp.All.Total++
+		if md.DPLA {
+			metadataResp.DPLA.Total++
+		}
+		if md.DateDLIngest != nil {
+			metadataResp.DL.Total++
+		}
+
+		if md.Type == "SirsiMetadata" {
+			metadataResp.All.SIRSI++
+			if md.DPLA {
+				metadataResp.DPLA.SIRSI++
+			}
+			if md.DateDLIngest != nil {
+				metadataResp.DL.SIRSI++
+			}
+		} else if md.Type == "XmlMetadata" {
+			metadataResp.All.XML++
+			if md.DPLA {
+				metadataResp.DPLA.XML++
+			}
+			if md.DateDLIngest != nil {
+				metadataResp.DL.XML++
+			}
+		}
+	}
+	c.JSON(http.StatusOK, metadataResp)
 }
 
 func (svc *serviceContext) getStorageStats(c *gin.Context) {
