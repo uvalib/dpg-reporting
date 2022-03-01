@@ -8,13 +8,10 @@
          <p v-if="reportStore.storageStats.rangeText">Images created {{reportStore.storageStats.rangeText}}</p>
          <dl>
             <dt>Total Image Size (GB):</dt>
-            <dd>{{numberWithCommas(reportStore.storageStats.all)}}</dd>
+            <dd>{{numberWithCommas(reportStore.storageStats.total)}}</dd>
             <dt>DL Total Image Size (GB):</dt>
             <dd>{{numberWithCommas(reportStore.storageStats.DL)}}</dd>
          </dl>
-         <div class="controls">
-            <button @click="loadStats">Refresh Stats</button>
-         </div>
       </div>
    </div>
 </template>
@@ -24,11 +21,8 @@ import {useReportStore} from '@/stores/reporting'
 import WaitSpinner from './WaitSpinner.vue';
 const reportStore = useReportStore()
 
-function loadStats() {
-   reportStore.getStorageSats()
-}
 function numberWithCommas(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 </script>
 
@@ -36,8 +30,6 @@ function numberWithCommas(num) {
 .stats-card {
    margin: 10px;
    text-align: left;
-   max-width: 40%;
-   min-width: 300px;
    border: 1px solid var(--uvalib-grey-light);
    box-shadow: var(--box-shadow-light);
    h3 {

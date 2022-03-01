@@ -1,30 +1,18 @@
 <template>
    <div class="stats-card">
-      <h3>Metadata Statistics</h3>
-      <div  v-if="reportStore.metadataStats.loading" class="wait-wrap">
+      <h3>Archive Statistics</h3>
+      <div  v-if="reportStore.archiveStats.loading" class="wait-wrap">
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
-         <p v-if="reportStore.metadataStats.rangeText">Metadata created {{reportStore.metadataStats.rangeText}}</p>
+         <p v-if="reportStore.storageStats.rangeText">Images archived {{reportStore.storageStats.rangeText}}</p>
          <dl>
-            <dt>Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.total)}}</dd>
-            <dt>SIRSI Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.sirsi)}}</dd>
-            <dt>XML Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.xml)}}</dd>
-            <dt>DL Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.totalDL)}}</dd>
-            <dt>DL SIRSI Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.sirsiDL)}}</dd>
-            <dt>DL XML Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.xmlDL)}}</dd>
-             <dt>DPLA Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.totalDPLA)}}</dd>
-            <dt>DPLA SIRSI Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.sirsiDPLA)}}</dd>
-            <dt>DPLA XML Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.xmlDPLA)}}</dd>
+            <dt>Total Bound Volumes:</dt>
+            <dd>{{numberWithCommas(reportStore.archiveStats.bound)}}</dd>
+            <dt>Total MSS / Unbound Items:</dt>
+            <dd>{{numberWithCommas(reportStore.archiveStats.manuscript)}}</dd>
+            <dt>Total Photograph / AV Items:</dt>
+            <dd>{{numberWithCommas(reportStore.archiveStats.photo)}}</dd>
          </dl>
          <div class="controls">
             <button @click="loadStats">Refresh Stats</button>
@@ -39,7 +27,7 @@ import WaitSpinner from './WaitSpinner.vue';
 const reportStore = useReportStore()
 
 function loadStats() {
-   reportStore.getMetadataSats()
+   reportStore.getArchiveSats()
 }
 function numberWithCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

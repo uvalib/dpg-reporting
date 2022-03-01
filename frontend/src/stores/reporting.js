@@ -16,9 +16,8 @@ export const useReportStore = defineStore('report', {
 			loading: false,
 		},
 		storageStats: {
-			all: 0,
+			total: 0,
 			DL: 0,
-			rangeText: "",
 			loading: false,
 		},
 		metadataStats: {
@@ -31,6 +30,13 @@ export const useReportStore = defineStore('report', {
 			totalDPLA: 0,
 			sirsiDPLA: 0,
 			xmlDPLA: 0,
+			rangeText: "",
+			loading: false,
+		},
+		archiveStats: {
+			bound: 0,
+			manuscript: 0,
+			photo: 0,
 			rangeText: "",
 			loading: false,
 		}
@@ -48,14 +54,14 @@ export const useReportStore = defineStore('report', {
 
 		getImageSats() {
 			let dateParam = getDateParam(this.dateRangeType, this.startDate, this.endDate)
-			let url = "/api/stats/image"
+			let url = "/api/stats/images"
 			if (dateParam != "") {
 				url += "?date="+encodeURIComponent(dateParam)
 			}
 			this.imageStats.rangeText = dateParam
 			this.imageStats.loading = true
 			axios.get(url).then(response => {
-				this.imageStats.total = response.data.all
+				this.imageStats.total = response.data.total
 				this.imageStats.DL = response.data.dl
 				this.imageStats.DPLA = response.data.dpla
 				this.imageStats.loading = false
@@ -66,15 +72,10 @@ export const useReportStore = defineStore('report', {
 		},
 
 		getStorageSats() {
-			let dateParam = getDateParam(this.dateRangeType, this.startDate, this.endDate)
 			let url = "/api/stats/storage"
-			if (dateParam != "") {
-				url += "?date="+encodeURIComponent(dateParam)
-			}
-			this.storageStats.rangeText = dateParam
 			this.storageStats.loading = true
 			axios.get(url).then(response => {
-				this.storageStats.all = response.data.all
+				this.storageStats.total = response.data.total
 				this.storageStats.DL = response.data.dl
 				this.storageStats.loading = false
 			}).catch(e => {
@@ -106,7 +107,26 @@ export const useReportStore = defineStore('report', {
             this.error = e
 				this.metadataStats.loading = false
          })
-		}
+		},
+
+		getArchiveSats() {
+			let dateParam = getDateParam(this.dateRangeType, this.startDate, this.endDate)
+			let url = "/api/stats/archive"
+			if (dateParam != "") {
+				url += "?date="+encodeURIComponent(dateParam)
+			}
+			this.archiveStats.rangeText = dateParam
+			this.archiveStats.loading = true
+			axios.get(url).then(response => {
+				this.archiveStats.bound = response.data.bound
+				this.archiveStats.manuscript = response.data.manuscript
+				this.archiveStats.photo = response.data.photo
+				this.archiveStats.loading = false
+			}).catch(e => {
+            this.error = e
+				this.archiveStats.loading = false
+         })
+		},
 	}
 })
 

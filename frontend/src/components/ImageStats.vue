@@ -38,8 +38,6 @@ function numberWithCommas(num) {
 .stats-card {
    margin: 10px;
    text-align: left;
-   max-width: 40%;
-   min-width: 300px;
    border: 1px solid var(--uvalib-grey-light);
    box-shadow: var(--box-shadow-light);
    h3 {

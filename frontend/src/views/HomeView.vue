@@ -18,9 +18,14 @@
          <!-- <button class="all-btn" @click="getAllClicked">Get All Statistics</button> -->
       </div>
       <div class="stats">
-         <ImageStats />
-         <StorageStats />
-         <MetadataStats />
+         <div class="column">
+            <StorageStats />
+            <ImageStats />
+            <ArchiveStats />
+         </div>
+         <div class="column">
+             <MetadataStats />
+         </div>
       </div>
    </main>
 </template>
@@ -31,7 +36,14 @@ import {useReportStore} from '@/stores/reporting'
 import ImageStats from '../components/ImageStats.vue'
 import StorageStats from '../components/StorageStats.vue';
 import MetadataStats from '../components/MetadataStats.vue';
+import { onMounted } from 'vue'
+import ArchiveStats from '../components/ArchiveStats.vue';
+
 const reportStore = useReportStore()
+
+onMounted( () => {
+   reportStore.getStorageSats()
+})
 
 // function getAllClicked() {
 //    alert("not implemented")
@@ -64,5 +76,10 @@ const reportStore = useReportStore()
 }
 .stats {
    margin: 10px 50px;
+   display: flex;
+   flex-flow: row wrap;
+   .column {
+      width: 48%;
+   }
 }
 </style>

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func (svc *serviceContext) getImageStats(c *gin.Context) {
@@ -20,27 +21,17 @@ func (svc *serviceContext) getImageStats(c *gin.Context) {
 	}
 
 	var imageResp struct {
-		All  int64 `json:"all"`
-		DL   int64 `json:"dl"`
-		DPLA int64 `json:"dpla"`
+		Total int64 `json:"total"`
+		DL    int64 `json:"dl"`
+		DPLA  int64 `json:"dpla"`
 	}
 
 	// all, dl, dpla
 	for i := 0; i < 3; i++ {
 		cntQuery := svc.GDB.Table("master_files")
+		addDateConstraint(cntQuery, "master_files.created_at", dateQStr)
 
-		if strings.Contains(dateQStr, "TO") {
-			bits := strings.Split(dateQStr, " ")
-			cntQuery = cntQuery.Where("master_files.created_at >= ? and master_files.created_at <= ?", bits[0], bits[2])
-		} else if strings.Contains(dateQStr, "AFTER") {
-			bits := strings.Split(dateQStr, " ")
-			cntQuery = cntQuery.Where("master_files.created_at >= ?", bits[1])
-		} else if strings.Contains(dateQStr, "BEFORE") {
-			bits := strings.Split(dateQStr, " ")
-			cntQuery = cntQuery.Where("master_files.created_at <= ?", bits[1])
-		}
-
-		count := &imageResp.All
+		count := &imageResp.Total
 		if i == 1 {
 			count = &imageResp.DL
 			cntQuery = cntQuery.Where("master_files.date_dl_ingest is not null")
@@ -90,23 +81,10 @@ func (svc *serviceContext) getMetadataStats(c *gin.Context) {
 		DPLA metadataDetail `json:"DPLA"`
 	}
 
+	// get all the MD recs in the requested date range...
 	var mdRecs []metadata
 	mdQ := svc.GDB.Select("id", "type", "date_dl_ingest", "dpla")
-	if strings.Contains(dateQStr, "TO") {
-		bits := strings.Split(dateQStr, " ")
-		log.Printf("INFO: get metadata records between [%s] and [%s]", bits[0], bits[2])
-		mdQ.Where("created_at >= ? and created_at <= ?", bits[0], bits[2])
-	} else if strings.Contains(dateQStr, "AFTER") {
-		bits := strings.Split(dateQStr, " ")
-		mdQ.Where("created_at >= ?", bits[1])
-		log.Printf("INFO: get metadata records after [%s]", bits[1])
-	} else if strings.Contains(dateQStr, "BEFORE") {
-		bits := strings.Split(dateQStr, " ")
-		log.Printf("INFO: get metadata records before [%s]", bits[1])
-		mdQ.Where("created_at <= ?", bits[1])
-	}
-
-	// get all the MD recs in the requested date range...
+	addDateConstraint(mdQ, "created_at", dateQStr)
 	err := mdQ.Find(&mdRecs).Error
 	if err != nil {
 		log.Printf("ERROR: unable to get metadata statistics: %s", err.Error())
@@ -147,33 +125,15 @@ func (svc *serviceContext) getMetadataStats(c *gin.Context) {
 
 func (svc *serviceContext) getStorageStats(c *gin.Context) {
 	log.Printf("INFO: get storage statistics")
-	dateQStr := c.Query("date")
-	if (strings.Contains(dateQStr, "TO") || strings.Contains(dateQStr, "AFTER") || strings.Contains(dateQStr, "BEFORE")) == false {
-		log.Printf("ERROR: invalid date query [%s]", dateQStr)
-		c.String(http.StatusBadRequest, fmt.Sprintf("%s is not valid", dateQStr))
-		return
-	}
 
 	var storageResp struct {
-		All float64 `json:"all"`
+		All float64 `json:"total"`
 		DL  float64 `json:"dl"`
 	}
 
 	// all, dl
 	for i := 0; i < 2; i++ {
 		szQuery := svc.GDB.Debug().Table("master_files")
-
-		if strings.Contains(dateQStr, "TO") {
-			bits := strings.Split(dateQStr, " ")
-			szQuery = szQuery.Where("master_files.created_at >= ? and master_files.created_at <= ?", bits[0], bits[2])
-		} else if strings.Contains(dateQStr, "AFTER") {
-			bits := strings.Split(dateQStr, " ")
-			szQuery = szQuery.Where("master_files.created_at >= ?", bits[1])
-		} else if strings.Contains(dateQStr, "BEFORE") {
-			bits := strings.Split(dateQStr, " ")
-			szQuery = szQuery.Where("master_files.created_at <= ?", bits[1])
-		}
-
 		sizeGB := &storageResp.All
 		if i == 1 {
 			sizeGB = &storageResp.DL
@@ -192,4 +152,68 @@ func (svc *serviceContext) getStorageStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, storageResp)
+}
+
+func (svc *serviceContext) getArchiveStats(c *gin.Context) {
+	log.Printf("INFO: get archive statistics")
+	dateQStr := c.Query("date")
+	if (strings.Contains(dateQStr, "TO") || strings.Contains(dateQStr, "AFTER") || strings.Contains(dateQStr, "BEFORE")) == false {
+		log.Printf("ERROR: invalid date query [%s]", dateQStr)
+		c.String(http.StatusBadRequest, fmt.Sprintf("%s is not valid", dateQStr))
+		return
+	}
+
+	var archiveResp struct {
+		Bound      int64 `json:"bound"`
+		Manuscript int64 `json:"manuscript"`
+		Photo      int64 `json:"photo"`
+	}
+
+	log.Printf("INFO: get archive stats for bound items")
+	boundCntQ := svc.GDB.Table("master_files").Where("title=?", "Spine")
+	addDateConstraint(boundCntQ, "date_archived", dateQStr)
+
+	err := boundCntQ.Debug().Count(&archiveResp.Bound).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get archived bound counts: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: get archive stats for photo/av items")
+	photoCntQ := svc.GDB.Table("master_files").
+		Joins("inner join metadata m on master_files.metadata_id = m.id").
+		Joins("inner join units u on u.id = master_files.unit_id").
+		Joins("inner join orders o on o.id = u.order_id").
+		Joins("inner join agencies a on a.id = o.agency_id")
+
+	// Negatives orders and Fine arts agency
+	photoCntQ.Where("(o.id = 8126 or o.id = 8125 or agency_id = 37)")
+
+	// Not unbound sheets
+	photoCntQ.Where("(m.call_number is null or (m.call_number is not null and m.call_number not like 'RG-%'))")
+	addDateConstraint(photoCntQ, "master_files.date_archived", dateQStr)
+	err = photoCntQ.Debug().Count(&archiveResp.Photo).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get archived photo counts: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: get archive stats for manuscript items")
+
+	c.JSON(http.StatusOK, archiveResp)
+}
+
+func addDateConstraint(baseQ *gorm.DB, fieldName string, dateQStr string) {
+	if strings.Contains(dateQStr, "TO") {
+		bits := strings.Split(dateQStr, " ")
+		baseQ.Where(fmt.Sprintf("%s >= ? and %s <= ?", fieldName, fieldName), bits[0], bits[2])
+	} else if strings.Contains(dateQStr, "AFTER") {
+		bits := strings.Split(dateQStr, " ")
+		baseQ.Where(fmt.Sprintf("%s >= ?", fieldName), bits[1])
+	} else if strings.Contains(dateQStr, "BEFORE") {
+		bits := strings.Split(dateQStr, " ")
+		baseQ.Where(fmt.Sprintf("%s <= ?", fieldName), bits[1])
+	}
 }

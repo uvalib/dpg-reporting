@@ -29,9 +29,10 @@ func main() {
 	router.GET("/healthcheck", svc.healthCheck)
 	api := router.Group("/api")
 	{
-		api.GET("/stats/image", svc.getImageStats)
+		api.GET("/stats/images", svc.getImageStats)
 		api.GET("/stats/storage", svc.getStorageStats)
 		api.GET("/stats/metadata", svc.getMetadataStats)
+		api.GET("/stats/archive", svc.getArchiveStats)
 	}
 
 	// Note: in dev mode, this is never actually used. The front end is served
