@@ -5,7 +5,6 @@
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
-         <p v-if="reportStore.metadataStats.rangeText">Metadata created {{reportStore.metadataStats.rangeText}}</p>
          <dl>
             <dt>Metadata Count:</dt>
             <dd>{{numberWithCommas(reportStore.metadataStats.total)}}</dd>
@@ -27,6 +26,7 @@
             <dd>{{numberWithCommas(reportStore.metadataStats.xmlDPLA)}}</dd>
          </dl>
          <div class="controls">
+            <span v-if="reportStore.metadataStats.rangeText">Metadata created {{reportStore.metadataStats.rangeText}}</span>
             <button @click="loadStats">Refresh Stats</button>
          </div>
       </div>
@@ -67,36 +67,43 @@ function numberWithCommas(num) {
    }
    .stats {
       padding: 10px;
-      p {
-         font-size: 0.9em;
-         padding: 0;
-         margin: 0 5px;
-      }
+
       .controls {
-         text-align: right;
+         border-top: 1px solid var(--uvalib-grey-lightest);
+         display: flex;
+         flex-flow: row wrap;
+         justify-content: space-between;
+         padding-top: 15px;
+         margin-top: 5px;
+         span {
+            font-style: italic;
+         }
+         button {
+            margin-left: auto;
+         }
       }
 
       dl {
-      margin: 10px 30px 0 30px;
-      display: inline-grid;
-      grid-template-columns: max-content 2fr;
-      grid-column-gap: 10px;
-      font-size: 0.9em;
-      text-align: left;
-      box-sizing: border-box;
+         margin: 10px 30px 0 30px;
+         display: inline-grid;
+         grid-template-columns: max-content 2fr;
+         grid-column-gap: 10px;
+         font-size: 0.9em;
+         text-align: left;
+         box-sizing: border-box;
 
-      dt {
-         font-weight: bold;
-         text-align: right;
+         dt {
+            font-weight: bold;
+            text-align: right;
+         }
+         dd {
+            margin: 0 0 10px 0;
+            word-break: break-word;
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            hyphens: auto;
+         }
       }
-      dd {
-         margin: 0 0 10px 0;
-         word-break: break-word;
-         -webkit-hyphens: auto;
-         -moz-hyphens: auto;
-         hyphens: auto;
-      }
-   }
    }
 }
 </style>

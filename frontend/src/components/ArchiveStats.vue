@@ -5,16 +5,16 @@
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
-         <p v-if="reportStore.storageStats.rangeText">Images archived {{reportStore.storageStats.rangeText}}</p>
          <dl>
             <dt>Total Bound Volumes:</dt>
             <dd>{{numberWithCommas(reportStore.archiveStats.bound)}}</dd>
-            <dt>Total MSS / Unbound Items:</dt>
+            <dt>Total MSS / Unbound Sheets:</dt>
             <dd>{{numberWithCommas(reportStore.archiveStats.manuscript)}}</dd>
             <dt>Total Photograph / AV Items:</dt>
             <dd>{{numberWithCommas(reportStore.archiveStats.photo)}}</dd>
          </dl>
          <div class="controls">
+            <span v-if="reportStore.archiveStats.rangeText">Items archived {{reportStore.archiveStats.rangeText}}</span>
             <button @click="loadStats">Refresh Stats</button>
          </div>
       </div>
@@ -61,7 +61,18 @@ function numberWithCommas(num) {
          margin: 0 5px;
       }
       .controls {
-         text-align: right;
+         border-top: 1px solid var(--uvalib-grey-lightest);
+         display: flex;
+         flex-flow: row wrap;
+         justify-content: space-between;
+         padding-top: 15px;
+         margin-top: 5px;
+         span {
+            font-style: italic;
+         }
+         button {
+            margin-left: auto;
+         }
       }
 
       dl {

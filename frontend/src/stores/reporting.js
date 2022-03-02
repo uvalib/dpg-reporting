@@ -52,6 +52,15 @@ export const useReportStore = defineStore('report', {
          })
       },
 
+		getAllStats(force) {
+			if (this.storageStats.total == 0 || force == true) {
+				this.getImageSats()
+				this.getStorageSats()
+				this.getMetadataSats()
+				this.getArchiveSats()
+			}
+		},
+
 		getImageSats() {
 			let dateParam = getDateParam(this.dateRangeType, this.startDate, this.endDate)
 			let url = "/api/stats/images"

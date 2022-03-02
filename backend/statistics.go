@@ -164,21 +164,26 @@ func (svc *serviceContext) getArchiveStats(c *gin.Context) {
 	}
 
 	var archiveResp struct {
-		Bound      int64 `json:"bound"`
+		Bound      int   `json:"bound"`
 		Manuscript int64 `json:"manuscript"`
 		Photo      int64 `json:"photo"`
 	}
 
 	log.Printf("INFO: get archive stats for bound items")
-	boundCntQ := svc.GDB.Table("master_files").Where("title=?", "Spine")
+	var boundIDs []int64
+	boundCntQ := svc.GDB.Debug().Table("master_files").
+		Joins("inner join metadata m on metadata_id = m.id").
+		Select("m.id").
+		Where("master_files.title=?", "Spine")
 	addDateConstraint(boundCntQ, "date_archived", dateQStr)
 
-	err := boundCntQ.Debug().Count(&archiveResp.Bound).Error
+	err := boundCntQ.Find(&boundIDs).Error
 	if err != nil {
 		log.Printf("ERROR: unable to get archived bound counts: %s", err.Error())
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
+	archiveResp.Bound = len(boundIDs)
 
 	log.Printf("INFO: get archive stats for photo/av items")
 	photoCntQ := svc.GDB.Table("master_files").
@@ -201,6 +206,29 @@ func (svc *serviceContext) getArchiveStats(c *gin.Context) {
 	}
 
 	log.Printf("INFO: get archive stats for manuscript items")
+	unboundCntQ := svc.GDB.Debug().Table("master_files").
+		Joins("inner join metadata m on metadata_id = m.id").
+		Where("(m.call_number like 'MSS%' or m.call_number like 'RG-%')"). // manuscript call numbers
+		Where("master_files.title not like '%verso'").                     // skip back sides of pages
+		Where("m.id != 3009").                                             // no visual history
+		Where(                                                             // take numbered pages or pages that look like standard parts of MSS
+			svc.GDB.Where("master_files.title regexp '^[[:digit:]]+'").
+				Or("master_files.title like 'front%'").
+				Or("master_files.title like 'rear%'").
+				Or("master_files.title like 'back%'").
+				Or("master_files.title like 'title%'").
+				Or("master_files.title like 'table%'").
+				Or("master_files.title like 'blank%'").
+				Or("master_files.title regexp '^(IX|IV|V?I{0,3})$'"),
+		).
+		Not("m.id in ?", boundIDs) // skip files that are part of a bound volume
+	addDateConstraint(unboundCntQ, "master_files.date_archived", dateQStr)
+	err = unboundCntQ.Debug().Count(&archiveResp.Manuscript).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get manuscript photo counts: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	c.JSON(http.StatusOK, archiveResp)
 }

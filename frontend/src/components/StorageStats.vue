@@ -5,7 +5,6 @@
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
-         <p v-if="reportStore.storageStats.rangeText">Images created {{reportStore.storageStats.rangeText}}</p>
          <dl>
             <dt>Total Image Size (GB):</dt>
             <dd>{{numberWithCommas(reportStore.storageStats.total)}}</dd>
@@ -47,36 +46,28 @@ function numberWithCommas(num) {
    }
    .stats {
       padding: 10px;
-      p {
-         font-size: 0.9em;
-         padding: 0;
-         margin: 0 5px;
-      }
-      .controls {
-         text-align: right;
-      }
 
       dl {
-      margin: 10px 30px 0 30px;
-      display: inline-grid;
-      grid-template-columns: max-content 2fr;
-      grid-column-gap: 10px;
-      font-size: 0.9em;
-      text-align: left;
-      box-sizing: border-box;
+         margin: 10px 30px 0 30px;
+         display: inline-grid;
+         grid-template-columns: max-content 2fr;
+         grid-column-gap: 10px;
+         font-size: 0.9em;
+         text-align: left;
+         box-sizing: border-box;
 
-      dt {
-         font-weight: bold;
-         text-align: right;
+         dt {
+            font-weight: bold;
+            text-align: right;
+         }
+         dd {
+            margin: 0 0 10px 0;
+            word-break: break-word;
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            hyphens: auto;
+         }
       }
-      dd {
-         margin: 0 0 10px 0;
-         word-break: break-word;
-         -webkit-hyphens: auto;
-         -moz-hyphens: auto;
-         hyphens: auto;
-      }
-   }
    }
 }
 </style>

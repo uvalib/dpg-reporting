@@ -15,7 +15,7 @@
             <datepicker :typeable="true" :clearable="true" v-model="reportStore.endDate" />
          </template>
 
-         <!-- <button class="all-btn" @click="getAllClicked">Get All Statistics</button> -->
+         <button class="all-btn" @click="getAllClicked">Get All Statistics</button>
       </div>
       <div class="stats">
          <div class="column">
@@ -42,12 +42,12 @@ import ArchiveStats from '../components/ArchiveStats.vue';
 const reportStore = useReportStore()
 
 onMounted( () => {
-   reportStore.getStorageSats()
+   reportStore.getAllStats(false)
 })
 
-// function getAllClicked() {
-//    alert("not implemented")
-// }
+function getAllClicked() {
+   reportStore.getAllStats(true)
+}
 </script>
 
 <style lang="scss" scoped>
