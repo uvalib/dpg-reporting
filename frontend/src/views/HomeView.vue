@@ -3,16 +3,16 @@
       <h2>DPG Statistics</h2>
        <div class="date-range">
          <label>Statistics from: </label>
-         <select v-model="reportStore.dateRangeType">
+         <select v-model="statsStore.dateRangeType">
             <option value="before">BEFORE</option>
             <option value="after">AFTER</option>
             <option value="between">BETWEEN</option>
          </select>
 
-         <datepicker :typeable="true" :clearable="true" v-model="reportStore.startDate" />
-         <template v-if="reportStore.dateRangeType == 'between' ">
+         <datepicker :typeable="true" :clearable="true" v-model="statsStore.startDate" />
+         <template v-if="statsStore.dateRangeType == 'between' ">
             <span class="date-sep">and</span>
-            <datepicker :typeable="true" :clearable="true" v-model="reportStore.endDate" />
+            <datepicker :typeable="true" :clearable="true" v-model="statsStore.endDate" />
          </template>
 
          <button class="all-btn" @click="getAllClicked">Get All Statistics</button>
@@ -32,21 +32,21 @@
 
 <script setup>
 import Datepicker from 'vue3-datepicker'
-import {useReportStore} from '@/stores/reporting'
+import {useStatsStore} from '@/stores/statistics'
 import ImageStats from '../components/ImageStats.vue'
 import StorageStats from '../components/StorageStats.vue';
 import MetadataStats from '../components/MetadataStats.vue';
 import { onMounted } from 'vue'
 import ArchiveStats from '../components/ArchiveStats.vue';
 
-const reportStore = useReportStore()
+const statsStore = useStatsStore()
 
 onMounted( () => {
-   reportStore.getAllStats(false)
+   statsStore.getAllStats(false)
 })
 
 function getAllClicked() {
-   reportStore.getAllStats(true)
+   statsStore.getAllStats(true)
 }
 </script>
 

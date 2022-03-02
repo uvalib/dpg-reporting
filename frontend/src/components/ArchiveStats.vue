@@ -1,20 +1,20 @@
 <template>
    <div class="stats-card">
       <h3>Archive Statistics</h3>
-      <div  v-if="reportStore.archiveStats.loading" class="wait-wrap">
+      <div  v-if="statsStore.archiveStats.loading" class="wait-wrap">
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
          <dl>
             <dt>Total Bound Volumes:</dt>
-            <dd>{{numberWithCommas(reportStore.archiveStats.bound)}}</dd>
+            <dd>{{numberWithCommas(statsStore.archiveStats.bound)}}</dd>
             <dt>Total MSS / Unbound Sheets:</dt>
-            <dd>{{numberWithCommas(reportStore.archiveStats.manuscript)}}</dd>
+            <dd>{{numberWithCommas(statsStore.archiveStats.manuscript)}}</dd>
             <dt>Total Photograph / AV Items:</dt>
-            <dd>{{numberWithCommas(reportStore.archiveStats.photo)}}</dd>
+            <dd>{{numberWithCommas(statsStore.archiveStats.photo)}}</dd>
          </dl>
          <div class="controls">
-            <span v-if="reportStore.archiveStats.rangeText">Items archived {{reportStore.archiveStats.rangeText}}</span>
+            <span v-if="statsStore.archiveStats.rangeText">Items archived {{statsStore.archiveStats.rangeText}}</span>
             <button @click="loadStats">Refresh Stats</button>
          </div>
       </div>
@@ -22,12 +22,12 @@
 </template>
 
 <script setup>
-import {useReportStore} from '@/stores/reporting'
+import {useStatsStore} from '@/stores/statistics'
 import WaitSpinner from './WaitSpinner.vue';
-const reportStore = useReportStore()
+const statsStore = useStatsStore()
 
 function loadStats() {
-   reportStore.getArchiveSats()
+   statsStore.getArchiveSats()
 }
 function numberWithCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

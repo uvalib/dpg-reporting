@@ -1,24 +1,24 @@
 <template>
    <div class="stats-card">
       <h3>Storage Statistics</h3>
-      <div  v-if="reportStore.storageStats.loading" class="wait-wrap">
+      <div  v-if="statsStore.storageStats.loading" class="wait-wrap">
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
          <dl>
             <dt>Total Image Size (GB):</dt>
-            <dd>{{numberWithCommas(reportStore.storageStats.total)}}</dd>
+            <dd>{{numberWithCommas(statsStore.storageStats.total)}}</dd>
             <dt>DL Total Image Size (GB):</dt>
-            <dd>{{numberWithCommas(reportStore.storageStats.DL)}}</dd>
+            <dd>{{numberWithCommas(statsStore.storageStats.DL)}}</dd>
          </dl>
       </div>
    </div>
 </template>
 
 <script setup>
-import {useReportStore} from '@/stores/reporting'
+import {useStatsStore} from '@/stores/statistics'
 import WaitSpinner from './WaitSpinner.vue';
-const reportStore = useReportStore()
+const statsStore = useStatsStore()
 
 function numberWithCommas(num) {
     return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

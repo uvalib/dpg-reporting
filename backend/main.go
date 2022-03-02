@@ -33,6 +33,8 @@ func main() {
 		api.GET("/stats/storage", svc.getStorageStats)
 		api.GET("/stats/metadata", svc.getMetadataStats)
 		api.GET("/stats/archive", svc.getArchiveStats)
+
+		api.GET("/reports/deliveries", svc.getDeliveriesReport)
 	}
 
 	// Note: in dev mode, this is never actually used. The front end is served

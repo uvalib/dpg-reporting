@@ -1,32 +1,32 @@
 <template>
    <div class="stats-card">
       <h3>Metadata Statistics</h3>
-      <div  v-if="reportStore.metadataStats.loading" class="wait-wrap">
+      <div  v-if="statsStore.metadataStats.loading" class="wait-wrap">
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
          <dl>
             <dt>Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.total)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.total)}}</dd>
             <dt>SIRSI Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.sirsi)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.sirsi)}}</dd>
             <dt>XML Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.xml)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.xml)}}</dd>
             <dt>DL Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.totalDL)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.totalDL)}}</dd>
             <dt>DL SIRSI Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.sirsiDL)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.sirsiDL)}}</dd>
             <dt>DL XML Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.xmlDL)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.xmlDL)}}</dd>
              <dt>DPLA Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.totalDPLA)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.totalDPLA)}}</dd>
             <dt>DPLA SIRSI Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.sirsiDPLA)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.sirsiDPLA)}}</dd>
             <dt>DPLA XML Metadata Count:</dt>
-            <dd>{{numberWithCommas(reportStore.metadataStats.xmlDPLA)}}</dd>
+            <dd>{{numberWithCommas(statsStore.metadataStats.xmlDPLA)}}</dd>
          </dl>
          <div class="controls">
-            <span v-if="reportStore.metadataStats.rangeText">Metadata created {{reportStore.metadataStats.rangeText}}</span>
+            <span v-if="statsStore.metadataStats.rangeText">Metadata created {{statsStore.metadataStats.rangeText}}</span>
             <button @click="loadStats">Refresh Stats</button>
          </div>
       </div>
@@ -34,12 +34,12 @@
 </template>
 
 <script setup>
-import {useReportStore} from '@/stores/reporting'
+import {useStatsStore} from '@/stores/statistics'
 import WaitSpinner from './WaitSpinner.vue';
-const reportStore = useReportStore()
+const statsStore = useStatsStore()
 
 function loadStats() {
-   reportStore.getMetadataSats()
+   statsStore.getMetadataSats()
 }
 function numberWithCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

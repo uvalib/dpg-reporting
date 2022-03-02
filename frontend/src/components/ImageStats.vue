@@ -1,20 +1,20 @@
 <template>
    <div class="stats-card">
       <h3>Image Statistics</h3>
-      <div  v-if="reportStore.imageStats.loading" class="wait-wrap">
+      <div  v-if="statsStore.imageStats.loading" class="wait-wrap">
          <WaitSpinner/>
       </div>
       <div v-else class="stats">
          <dl>
             <dt>Image Count:</dt>
-            <dd>{{numberWithCommas(reportStore.imageStats.total)}}</dd>
+            <dd>{{numberWithCommas(statsStore.imageStats.total)}}</dd>
             <dt>DL Image Count:</dt>
-            <dd>{{numberWithCommas(reportStore.imageStats.DL)}}</dd>
+            <dd>{{numberWithCommas(statsStore.imageStats.DL)}}</dd>
             <dt>DPLA Image Count:</dt>
-            <dd>{{numberWithCommas(reportStore.imageStats.DPLA)}}</dd>
+            <dd>{{numberWithCommas(statsStore.imageStats.DPLA)}}</dd>
          </dl>
          <div class="controls">
-            <span v-if="reportStore.imageStats.rangeText">Images created {{reportStore.imageStats.rangeText}}</span>
+            <span v-if="statsStore.imageStats.rangeText">Images created {{statsStore.imageStats.rangeText}}</span>
             <button @click="loadStats">Refresh Stats</button>
          </div>
       </div>
@@ -22,12 +22,12 @@
 </template>
 
 <script setup>
-import {useReportStore} from '@/stores/reporting'
+import {useStatsStore} from '@/stores/statistics'
 import WaitSpinner from './WaitSpinner.vue';
-const reportStore = useReportStore()
+const statsStore = useStatsStore()
 
 function loadStats() {
-   reportStore.getImageSats()
+   statsStore.getImageSats()
 }
 function numberWithCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

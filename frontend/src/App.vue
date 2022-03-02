@@ -8,7 +8,7 @@
          </div>
          <div class="site-link">
             <router-link to="/">DPG Reporting</router-link>
-            <p class="version">{{ reportStore.version }}</p>
+            <p class="version">{{ systemStore.version }}</p>
          </div>
       </div>
    </header>
@@ -23,12 +23,12 @@
 
 <script setup>
 import UvaLibraryLogo from './components/UvaLibraryLogo.vue'
-import {useReportStore} from '@/stores/reporting'
+import {useSystemStore} from '@/stores/system'
 import { onMounted } from 'vue'
 
-const reportStore = useReportStore()
+const systemStore = useSystemStore()
 onMounted( () => {
-   reportStore.getVersion()
+   systemStore.getVersion()
 })
 </script>
 
