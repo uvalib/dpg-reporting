@@ -29,6 +29,7 @@ import { onMounted } from 'vue'
 const systemStore = useSystemStore()
 onMounted( () => {
    systemStore.getVersion()
+   systemStore.getWorkflows()
 })
 </script>
 

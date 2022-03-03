@@ -58,6 +58,13 @@ body {
    background: white;
 }
 
+#app input, #app select {
+   border: 1px solid var(--uvalib-grey-light);
+   border-radius: 5px;
+   padding: 2px 4px;
+   color: var(--uvalib-text);
+}
+
 h2 {
    color: var(--uvalib-brand-orange);
    margin-bottom: 50px;

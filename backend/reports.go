@@ -83,3 +83,38 @@ func (svc *serviceContext) getDeliveriesReport(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
+func (svc *serviceContext) getProductivityReport(c *gin.Context) {
+	log.Printf("INFO: get productivity report")
+	workflowID := c.Query("workflow")
+	startDate := c.Query("start")
+	endDate := c.Query("end")
+
+	var resp struct {
+		CompletedProjects int      `json:"completedProjects"`
+		Types             []string `json:"types"`
+		Productivity      []int64  `json:"productivity"`
+	}
+	type productivityRec struct {
+		Type  string
+		Count int64
+	}
+	var dbData []productivityRec
+	err := svc.GDB.Table("projects").Select("c.name as type, count(projects.id) as count").
+		Joins("inner join categories c on c.id = category_id").
+		Where("finished_at is not null").Where("workflow_id=?", workflowID).
+		Where("finished_at >= ? and finished_at <= ?", startDate, endDate).
+		Group("c.id").Find(&dbData).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get productivity report: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	for _, p := range dbData {
+		resp.CompletedProjects += int(p.Count)
+		resp.Types = append(resp.Types, p.Type)
+		resp.Productivity = append(resp.Productivity, p.Count)
+	}
+
+	c.JSON(http.StatusOK, resp)
+}

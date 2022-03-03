@@ -1,14 +1,8 @@
 <template>
    <div class="reports-card">
-      <h3>Patron Deliveries</h3>
+      <h3>Productivity</h3>
       <div class="report">
-         <LineChart :chartData="reportStore.deliveries" :options="options" />
-         <div class="controls">
-            <span class="year-picker">
-               <label>Year:<input v-model="tgtYear"></label>
-            </span>
-            <button @click="loadStats">Generate</button>
-         </div>
+         <BarChart :chartData="reportStore.productivity" :options="options"/>
       </div>
       <div  v-if="reportStore.deliveries.loading" class="wait-wrap">
          <WaitSpinner/>
@@ -20,31 +14,37 @@
 import { ref, onMounted } from 'vue'
 import {useReportStore} from '@/stores/reporting'
 import WaitSpinner from '@/components/WaitSpinner.vue'
-import { LineChart } from 'vue-chart-3'
+import { BarChart } from 'vue-chart-3'
 import { Chart, registerables } from "chart.js"
 
 Chart.register(...registerables)
 
-const tgtYear = ref( new Date().getFullYear() )
-
 const options = ref({
       responsive: true,
+      title: {
+         display: false,
+      },
+      legend: {
+         display: false
+      },
       plugins: {
         legend: {
-          position: 'top',
+            display: false,
         },
       },
     });
 
 const reportStore = useReportStore()
 
-function loadStats() {
-   reportStore.getDeliveriesReport(tgtYear.value)
-}
-
 onMounted( () => {
-   if (reportStore.deliveries.datasets.length == 0) {
-      reportStore.getDeliveriesReport(tgtYear.value)
+   if (reportStore.startDate == null) {
+      var oldDate = new Date()
+      oldDate.setMonth(oldDate.getMonth() - 3)
+      reportStore.startDate  = oldDate
+      reportStore.endDate = new Date()
+   }
+   if (reportStore.productivity.datasets.length == 0) {
+      reportStore.getProductivityReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
    }
 })
 </script>
@@ -82,23 +82,6 @@ onMounted( () => {
    }
    .report {
       padding: 10px;
-      .controls {
-         border-top: 1px solid var(--uvalib-grey-lightest);
-         display: flex;
-         flex-flow: row wrap;
-         justify-content: space-between;
-         padding-top: 15px;
-         margin-top: 5px;
-         button {
-            margin-left: auto;
-         }
-         input {
-            margin: 0 5px;
-            width: 85px;
-            color: var(--uvalib-text);
-            text-align: center;
-         }
-      }
    }
 }
 </style>

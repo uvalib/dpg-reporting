@@ -78,3 +78,18 @@ func (svc *serviceContext) getVersion(c *gin.Context) {
 	vMap["build"] = build
 	c.JSON(http.StatusOK, vMap)
 }
+
+func (svc *serviceContext) getWorkflows(c *gin.Context) {
+	type workflow struct {
+		ID   int64  `json:"id"`
+		Name string `json:"name"`
+	}
+	var wfResp []workflow
+	err := svc.GDB.Where("active=?", true).Find(&wfResp).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get workflows: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, wfResp)
+}

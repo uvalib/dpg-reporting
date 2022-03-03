@@ -34,7 +34,9 @@ func main() {
 		api.GET("/stats/metadata", svc.getMetadataStats)
 		api.GET("/stats/archive", svc.getArchiveStats)
 
+		api.GET("workflows", svc.getWorkflows)
 		api.GET("/reports/deliveries", svc.getDeliveriesReport)
+		api.GET("/reports/productivity", svc.getProductivityReport)
 	}
 
 	// Note: in dev mode, this is never actually used. The front end is served

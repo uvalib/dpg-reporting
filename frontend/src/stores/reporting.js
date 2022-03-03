@@ -5,11 +5,19 @@ import {useSystemStore} from '@/stores/system'
 export const useReportStore = defineStore('report', {
 	state: () => ({
 		systemStore: useSystemStore(),
+		workflowID: 1,
+		startDate: null,
+		endDate: null,
 		deliveries: {
 			labels: [],
 			datasets: [],
 			loading: false,
 		},
+		productivity: {
+			loading: false,
+			labels: [],
+			datasets: [],
+		}
 	}),
 	getters: {
 	},
@@ -33,5 +41,25 @@ export const useReportStore = defineStore('report', {
 				this.deliveries.loading = false
          })
 		},
+		getProductivityReport( workflowID, start, end ) {
+			let url = `/api/reports/productivity?workflow=${workflowID}&start=${dateString(start)}&end=${dateString(end)}`
+			this.productivity.loading = true
+			axios.get(url).then(response => {
+				this.productivity.labels = response.data.types
+				let prodDataset = {data: response.data.productivity, backgroundColor: "#44aacc"}
+				this.productivity.datasets.splice(0, this.deliveries.datasets.length)
+				this.productivity.datasets.push(prodDataset)
+				this.productivity.loading = false
+			}).catch(e => {
+            this.systemStore.error = e
+				this.productivity.loading = false
+         })
+		}
 	}
 })
+
+function dateString(date) {
+	let mo = `${date.getMonth()+1}`
+	let day = `${date.getDate()}`
+	return `${date.getFullYear()}-${mo.padStart(2,'0')}-${day.padStart(2,'0')}`
+}
