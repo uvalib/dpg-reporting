@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import {useSystemStore} from '@/stores/system'
 
 export const useReportStore = defineStore('report', {
 	state: () => ({
-		systemStore: useSystemStore(),
 		workflowID: 1,
 		startDate: null,
 		endDate: null,
@@ -12,17 +10,20 @@ export const useReportStore = defineStore('report', {
 			labels: [],
 			datasets: [],
 			loading: false,
+			error: ""
 		},
 		productivity: {
 			loading: false,
 			labels: [],
 			datasets: [],
 			totalCompleted: 0,
+			error: ""
 		},
 		problems: {
 			loading: false,
 			labels: [],
 			datasets: [],
+			error: ""
 		}
 	}),
 	getters: {
@@ -49,8 +50,9 @@ export const useReportStore = defineStore('report', {
 				this.deliveries.datasets.push(okDataset)
 				this.deliveries.datasets.push(errDataset)
 				this.deliveries.loading = false
+				this.deliveries.error = ""
 			}).catch(e => {
-            this.systemStore.error = e
+            this.deliveries.error = e
 				this.deliveries.loading = false
          })
 		},
@@ -64,8 +66,9 @@ export const useReportStore = defineStore('report', {
 				this.productivity.datasets.push(prodDataset)
 				this.productivity.totalCompleted = response.data.completedProjects
 				this.productivity.loading = false
+				this.productivity.error = ""
 			}).catch(e => {
-            this.systemStore.error = e
+            this.productivity.error = e
 				this.productivity.loading = false
          })
 		},
@@ -78,8 +81,9 @@ export const useReportStore = defineStore('report', {
 				this.problems.datasets.splice(0, this.problems.datasets.length)
 				this.problems.datasets.push(dataset)
 				this.problems.loading = false
+				this.problems.error = ""
 			}).catch(e => {
-            this.systemStore.error = e
+            this.problems.error = e
 				this.problems.loading = false
          })
 		}

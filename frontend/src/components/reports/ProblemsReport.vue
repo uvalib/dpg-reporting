@@ -3,6 +3,7 @@
       <h3>Problems</h3>
       <div class="report">
          <BarChart :chartData="reportStore.problems" :options="options"/>
+         <p class="error" v-if="reportStore.problems.error">{{reportStore.problems.error}}</p>
       </div>
       <div  v-if="reportStore.problems.loading" class="wait-wrap">
          <WaitSpinner/>

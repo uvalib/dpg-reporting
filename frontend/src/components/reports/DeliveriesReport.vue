@@ -3,6 +3,7 @@
       <h3>Patron Deliveries</h3>
       <div class="report">
          <LineChart :chartData="reportStore.deliveries" :options="options" />
+         <p class="error" v-if="reportStore.deliveries.error">{{reportStore.deliveries.error}}</p>
          <div class="controls">
             <span class="year-picker">
                <label>Year:<input v-model="tgtYear"></label>

@@ -58,6 +58,11 @@ body {
    background: white;
 }
 
+.error {
+   text-align: center;
+   color: var(--uvalib-red-emergency);
+}
+
 #app input, #app select {
    border: 1px solid var(--uvalib-grey-light);
    border-radius: 5px;

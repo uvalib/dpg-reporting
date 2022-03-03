@@ -6,8 +6,9 @@
          <div class="total">
             <label>Total Completed Projects:</label><span class="total">{{reportStore.productivity.totalCompleted}}</span>
          </div>
+         <p class="error" v-if="reportStore.productivity.error">{{reportStore.productivity.error}}</p>
       </div>
-      <div  v-if="reportStore.deliveries.loading" class="wait-wrap">
+      <div  v-if="reportStore.productivity.loading" class="wait-wrap">
          <WaitSpinner/>
       </div>
    </div>
