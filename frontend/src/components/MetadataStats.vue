@@ -25,11 +25,8 @@
             <dt>DPLA XML Metadata Count:</dt>
             <dd>{{numberWithCommas(statsStore.metadataStats.xmlDPLA)}}</dd>
          </dl>
-         <div class="controls">
-            <span v-if="statsStore.metadataStats.rangeText">Metadata created {{statsStore.metadataStats.rangeText}}</span>
-            <button @click="loadStats">Refresh Stats</button>
-         </div>
       </div>
+      <p class="error" v-if="statsStore.metadataStats.error">{{statsStore.metadataStats.error}}</p>
    </div>
 </template>
 
@@ -38,9 +35,6 @@ import {useStatsStore} from '@/stores/statistics'
 import WaitSpinner from './WaitSpinner.vue';
 const statsStore = useStatsStore()
 
-function loadStats() {
-   statsStore.getMetadataSats()
-}
 function numberWithCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -67,21 +61,6 @@ function numberWithCommas(num) {
    }
    .stats {
       padding: 10px;
-
-      .controls {
-         border-top: 1px solid var(--uvalib-grey-lightest);
-         display: flex;
-         flex-flow: row wrap;
-         justify-content: space-between;
-         padding-top: 15px;
-         margin-top: 5px;
-         span {
-            font-style: italic;
-         }
-         button {
-            margin-left: auto;
-         }
-      }
 
       dl {
          margin: 10px 30px 0 30px;

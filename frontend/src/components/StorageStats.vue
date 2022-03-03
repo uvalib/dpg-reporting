@@ -12,6 +12,7 @@
             <dd>{{numberWithCommas(statsStore.storageStats.DL)}}</dd>
          </dl>
       </div>
+      <p class="error" v-if="statsStore.storageStats.error">{{statsStore.storageStats.error}}</p>
    </div>
 </template>
 

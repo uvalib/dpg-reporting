@@ -133,7 +133,7 @@ func (svc *serviceContext) getStorageStats(c *gin.Context) {
 
 	// all, dl
 	for i := 0; i < 2; i++ {
-		szQuery := svc.GDB.Debug().Table("master_files")
+		szQuery := svc.GDB.Table("master_files")
 		sizeGB := &storageResp.All
 		if i == 1 {
 			sizeGB = &storageResp.DL
@@ -171,7 +171,7 @@ func (svc *serviceContext) getArchiveStats(c *gin.Context) {
 
 	log.Printf("INFO: get archive stats for bound items")
 	var boundIDs []int64
-	boundCntQ := svc.GDB.Debug().Table("master_files").
+	boundCntQ := svc.GDB.Table("master_files").
 		Joins("inner join metadata m on metadata_id = m.id").
 		Select("m.id").
 		Where("master_files.title=?", "Spine")
@@ -198,7 +198,7 @@ func (svc *serviceContext) getArchiveStats(c *gin.Context) {
 	// Not unbound sheets
 	photoCntQ.Where("(m.call_number is null or (m.call_number is not null and m.call_number not like 'RG-%'))")
 	addDateConstraint(photoCntQ, "master_files.date_archived", dateQStr)
-	err = photoCntQ.Debug().Count(&archiveResp.Photo).Error
+	err = photoCntQ.Count(&archiveResp.Photo).Error
 	if err != nil {
 		log.Printf("ERROR: unable to get archived photo counts: %s", err.Error())
 		c.String(http.StatusInternalServerError, err.Error())
@@ -206,7 +206,7 @@ func (svc *serviceContext) getArchiveStats(c *gin.Context) {
 	}
 
 	log.Printf("INFO: get archive stats for manuscript items")
-	unboundCntQ := svc.GDB.Debug().Table("master_files").
+	unboundCntQ := svc.GDB.Table("master_files").
 		Joins("inner join metadata m on metadata_id = m.id").
 		Where("(m.call_number like 'MSS%' or m.call_number like 'RG-%')"). // manuscript call numbers
 		Where("master_files.title not like '%verso'").                     // skip back sides of pages
@@ -223,7 +223,7 @@ func (svc *serviceContext) getArchiveStats(c *gin.Context) {
 		).
 		Not("m.id in ?", boundIDs) // skip files that are part of a bound volume
 	addDateConstraint(unboundCntQ, "master_files.date_archived", dateQStr)
-	err = unboundCntQ.Debug().Count(&archiveResp.Manuscript).Error
+	err = unboundCntQ.Count(&archiveResp.Manuscript).Error
 	if err != nil {
 		log.Printf("ERROR: unable to get manuscript photo counts: %s", err.Error())
 		c.String(http.StatusInternalServerError, err.Error())

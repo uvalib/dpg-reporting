@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import {useSystemStore} from '@/stores/system'
 
 export const useStatsStore = defineStore('stats', {
 	state: () => ({
-		systemStore: useSystemStore(),
 		dateRangeType: "before",
 		startDate: new Date(),
 		endDate: null,
@@ -12,7 +10,7 @@ export const useStatsStore = defineStore('stats', {
 			total: 0,
 			DL: 0,
 			DPLA: 0,
-			rangeText: "",
+			error: "",
 			loading: false,
 		},
 		storageStats: {
@@ -30,14 +28,14 @@ export const useStatsStore = defineStore('stats', {
 			totalDPLA: 0,
 			sirsiDPLA: 0,
 			xmlDPLA: 0,
-			rangeText: "",
+			error: "",
 			loading: false,
 		},
 		archiveStats: {
 			bound: 0,
 			manuscript: 0,
 			photo: 0,
-			rangeText: "",
+			error: "",
 			loading: false,
 		}
 	}),
@@ -66,8 +64,9 @@ export const useStatsStore = defineStore('stats', {
 				this.imageStats.DL = response.data.dl
 				this.imageStats.DPLA = response.data.dpla
 				this.imageStats.loading = false
+				this.imageStats.error = ""
 			}).catch(e => {
-            this.systemStore.error = e
+            this.imageStats.error = e
 				this.imageStats.loading = false
          })
 		},
@@ -79,8 +78,9 @@ export const useStatsStore = defineStore('stats', {
 				this.storageStats.total = response.data.total
 				this.storageStats.DL = response.data.dl
 				this.storageStats.loading = false
+				this.storageStats.error = ""
 			}).catch(e => {
-            this.systemStore.error = e
+            this.storageStats.error = e
 				this.storageStats.loading = false
          })
 		},
@@ -103,9 +103,10 @@ export const useStatsStore = defineStore('stats', {
 				this.metadataStats.totalDPLA = response.data.DPLA.total
 				this.metadataStats.sirsiDPLA = response.data.DPLA.sirsi
 				this.metadataStats.xmlDPLA = response.data.DPLA.xml
+				this.metadataStats.error = ""
 				this.metadataStats.loading = false
 			}).catch(e => {
-            this.systemStore.error = e
+            this.metadataStats.error = e
 				this.metadataStats.loading = false
          })
 		},
@@ -123,8 +124,9 @@ export const useStatsStore = defineStore('stats', {
 				this.archiveStats.manuscript = response.data.manuscript
 				this.archiveStats.photo = response.data.photo
 				this.archiveStats.loading = false
+				this.archiveStats.error = ""
 			}).catch(e => {
-            this.systemStore.error = e
+            this.archiveStats.error = e
 				this.archiveStats.loading = false
          })
 		},

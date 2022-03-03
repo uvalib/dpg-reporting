@@ -9,7 +9,7 @@
             <option value="between">BETWEEN</option>
          </select>
 
-         <datepicker :typeable="true" :clearable="true" v-model="statsStore.startDate" />
+         <datepicker :typeable="true" v-model="statsStore.startDate" />
          <template v-if="statsStore.dateRangeType == 'between' ">
             <span class="date-sep">and</span>
             <datepicker :typeable="true" :clearable="true" v-model="statsStore.endDate" />

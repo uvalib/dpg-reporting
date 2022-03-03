@@ -13,11 +13,8 @@
             <dt>Total Photograph / AV Items:</dt>
             <dd>{{numberWithCommas(statsStore.archiveStats.photo)}}</dd>
          </dl>
-         <div class="controls">
-            <span v-if="statsStore.archiveStats.rangeText">Items archived {{statsStore.archiveStats.rangeText}}</span>
-            <button @click="loadStats">Refresh Stats</button>
-         </div>
       </div>
+      <p class="error" v-if="statsStore.archiveStats.error">{{statsStore.archiveStats.error}}</p>
    </div>
 </template>
 
@@ -26,9 +23,6 @@ import {useStatsStore} from '@/stores/statistics'
 import WaitSpinner from './WaitSpinner.vue';
 const statsStore = useStatsStore()
 
-function loadStats() {
-   statsStore.getArchiveSats()
-}
 function numberWithCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
@@ -60,42 +54,28 @@ function numberWithCommas(num) {
          padding: 0;
          margin: 0 5px;
       }
-      .controls {
-         border-top: 1px solid var(--uvalib-grey-lightest);
-         display: flex;
-         flex-flow: row wrap;
-         justify-content: space-between;
-         padding-top: 15px;
-         margin-top: 5px;
-         span {
-            font-style: italic;
-         }
-         button {
-            margin-left: auto;
-         }
-      }
 
       dl {
-      margin: 10px 30px 0 30px;
-      display: inline-grid;
-      grid-template-columns: max-content 2fr;
-      grid-column-gap: 10px;
-      font-size: 0.9em;
-      text-align: left;
-      box-sizing: border-box;
+         margin: 10px 30px 0 30px;
+         display: inline-grid;
+         grid-template-columns: max-content 2fr;
+         grid-column-gap: 10px;
+         font-size: 0.9em;
+         text-align: left;
+         box-sizing: border-box;
 
-      dt {
-         font-weight: bold;
-         text-align: right;
+         dt {
+            font-weight: bold;
+            text-align: right;
+         }
+         dd {
+            margin: 0 0 10px 0;
+            word-break: break-word;
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            hyphens: auto;
+         }
       }
-      dd {
-         margin: 0 0 10px 0;
-         word-break: break-word;
-         -webkit-hyphens: auto;
-         -moz-hyphens: auto;
-         hyphens: auto;
-      }
-   }
    }
 }
 </style>

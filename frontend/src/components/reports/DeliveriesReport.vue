@@ -58,6 +58,7 @@ onMounted( () => {
    box-shadow: var(--box-shadow-light);
    position: relative;
    min-height: 360px;
+   width: 100%;
    h3 {
       background: var(--uvalib-grey-lightest);
       font-size: 1em;
@@ -87,14 +88,11 @@ onMounted( () => {
          border-top: 1px solid var(--uvalib-grey-lightest);
          display: flex;
          flex-flow: row wrap;
-         justify-content: space-between;
+         justify-content: flex-end;
          padding-top: 15px;
          margin-top: 5px;
-         button {
-            margin-left: auto;
-         }
          input {
-            margin: 0 5px;
+            margin: 0 10px;
             width: 85px;
             color: var(--uvalib-text);
             text-align: center;

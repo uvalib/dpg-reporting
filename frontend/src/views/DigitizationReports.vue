@@ -8,11 +8,11 @@
       <div class="reports">
          <div class="column">
             <ProductivityReport />
-            <DeliveriesReport />
          </div>
-          <div class="column">
-             <ProblemsReport />
-          </div>
+         <div class="column">
+            <ProblemsReport />
+         </div>
+         <DeliveriesReport />
       </div>
    </main>
 </template>
