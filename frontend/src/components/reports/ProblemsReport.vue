@@ -1,13 +1,10 @@
 <template>
    <div class="reports-card">
-      <h3>Productivity</h3>
+      <h3>Problems</h3>
       <div class="report">
-         <BarChart :chartData="reportStore.productivity" :options="options"/>
-         <div class="total">
-            <label>Total Completed Projects:</label><span class="total">{{reportStore.productivity.totalCompleted}}</span>
-         </div>
+         <BarChart :chartData="reportStore.problems" :options="options"/>
       </div>
-      <div  v-if="reportStore.deliveries.loading" class="wait-wrap">
+      <div  v-if="reportStore.problems.loading" class="wait-wrap">
          <WaitSpinner/>
       </div>
    </div>
@@ -30,6 +27,13 @@ const options = ref({
       legend: {
          display: false
       },
+      scales:  {
+         xAxis: {
+            ticks: {
+               autoSkip: false
+            }
+         }
+      },
       plugins: {
         legend: {
             display: false,
@@ -40,8 +44,8 @@ const options = ref({
 const reportStore = useReportStore()
 
 onMounted( () => {
-   if (reportStore.productivity.datasets.length == 0) {
-      reportStore.getProductivityReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
+   if (reportStore.problems.datasets.length == 0) {
+      reportStore.getProblemsReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
    }
 })
 </script>
@@ -62,13 +66,6 @@ onMounted( () => {
       padding: 5px 10px;
       border-bottom: 1px solid var(--uvalib-grey-light);
       font-weight: 500;;
-   }
-   div.total {
-      margin: 10px 0 5px 0;
-      text-align: center;
-      span.total {
-         margin-left: 10px;
-      }
    }
    .wait-wrap {
       text-align: center;

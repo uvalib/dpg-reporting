@@ -24,12 +24,16 @@
 <script setup>
 import UvaLibraryLogo from './components/UvaLibraryLogo.vue'
 import {useSystemStore} from '@/stores/system'
+import {useReportStore} from '@/stores/reporting'
 import { onMounted } from 'vue'
 
 const systemStore = useSystemStore()
+const reportStore = useReportStore()
+
 onMounted( () => {
    systemStore.getVersion()
    systemStore.getWorkflows()
+   reportStore.init()
 })
 </script>
 

@@ -17,11 +17,24 @@ export const useReportStore = defineStore('report', {
 			loading: false,
 			labels: [],
 			datasets: [],
+			totalCompleted: 0,
+		},
+		problems: {
+			loading: false,
+			labels: [],
+			datasets: [],
 		}
 	}),
 	getters: {
 	},
 	actions: {
+		init() {
+			var oldDate = new Date()
+			oldDate.setMonth(oldDate.getMonth() - 3)
+			this.startDate  = oldDate
+			this.endDate = new Date()
+		},
+
 		getDeliveriesReport( year ) {
 			let url = `/api/reports/deliveries?year=${year}`
 			this.deliveries.loading = true
@@ -49,10 +62,25 @@ export const useReportStore = defineStore('report', {
 				let prodDataset = {data: response.data.productivity, backgroundColor: "#44aacc"}
 				this.productivity.datasets.splice(0, this.deliveries.datasets.length)
 				this.productivity.datasets.push(prodDataset)
+				this.productivity.totalCompleted = response.data.completedProjects
 				this.productivity.loading = false
 			}).catch(e => {
             this.systemStore.error = e
 				this.productivity.loading = false
+         })
+		},
+		getProblemsReport( workflowID, start, end ) {
+			let url = `/api/reports/problems?workflow=${workflowID}&start=${dateString(start)}&end=${dateString(end)}`
+			this.problems.loading = true
+			axios.get(url).then(response => {
+				this.problems.labels = response.data.types
+				let dataset = {data: response.data.problems, backgroundColor: "#cc4444"}
+				this.problems.datasets.splice(0, this.problems.datasets.length)
+				this.problems.datasets.push(dataset)
+				this.problems.loading = false
+			}).catch(e => {
+            this.systemStore.error = e
+				this.problems.loading = false
          })
 		}
 	}

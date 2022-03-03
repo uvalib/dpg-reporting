@@ -10,6 +10,9 @@
             <ProductivityReport />
             <DeliveriesReport />
          </div>
+          <div class="column">
+             <ProblemsReport />
+          </div>
       </div>
    </main>
 </template>
@@ -19,11 +22,13 @@ import DeliveriesReport from '@/components/reports/DeliveriesReport.vue'
 import ProductivityReport from '@/components/reports/ProductivityReport.vue'
 import ReportConfig from '../components/reports/ReportConfig.vue'
 import {useReportStore} from '@/stores/reporting'
+import ProblemsReport from '../components/reports/ProblemsReport.vue';
 
 const reportStore = useReportStore()
 
 function loadStats() {
    reportStore.getProductivityReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
+   reportStore.getProblemsReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
 }
 </script>
 
