@@ -21,9 +21,9 @@ export const useReportStore = defineStore('report', {
 				// convert the response data to the datastructure needed by chart.js
 				this.deliveries.labels = response.data.months
 				this.deliveries.datasets.splice(0, this.deliveries.datasets.length)
-				var totalDataset = {data: response.data.total, backgroundColor: "#44cc44", fill: false, borderColor: "#44cc44", label: "Total"}
-				var okDataset = {data: response.data.onTime, backgroundColor: "#44aacc", fill: false, borderColor: "#44aacc", label: "On-Time"};
-				var errDataset = {data: response.data.late, backgroundColor: "#cc4444", fill: false, borderColor: "#cc4444", label: "Late"}
+				var totalDataset = {data: response.data.total, backgroundColor: "#44cc44", fill: false, borderColor: "#44cc44", label: "Total", tension: 0.4}
+				var okDataset = {data: response.data.onTime, backgroundColor: "#44aacc", fill: false, borderColor: "#44aacc", label: "On-Time", tension: 0.4}
+				var errDataset = {data: response.data.late, backgroundColor: "#cc4444", fill: false, borderColor: "#cc4444", label: "Late", tension: 0.4}
 				this.deliveries.datasets.push(totalDataset)
 				this.deliveries.datasets.push(okDataset)
 				this.deliveries.datasets.push(errDataset)

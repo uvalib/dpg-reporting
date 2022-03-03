@@ -1,41 +1,52 @@
 <template>
    <div class="reports-card">
       <h3>Patron Deliveries</h3>
-      <div  v-if="reportStore.deliveries.loading" class="wait-wrap">
-         <WaitSpinner/>
-      </div>
-      <div v-else class="report">
-         <DoughnutChart :chartData="testData" />
+      <div class="report">
+         <LineChart :chartData="reportStore.deliveries" :options="options" />
          <div class="controls">
+            <span class="year-picker">
+               <label>Year:<input v-model="tgtYear"></label>
+            </span>
             <button @click="loadStats">Refresh Report</button>
          </div>
+      </div>
+      <div  v-if="reportStore.deliveries.loading" class="wait-wrap">
+         <WaitSpinner/>
       </div>
    </div>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import {useReportStore} from '@/stores/reporting'
 import WaitSpinner from '@/components/WaitSpinner.vue'
-import { DoughnutChart } from 'vue-chart-3'
+import { LineChart } from 'vue-chart-3'
 import { Chart, registerables } from "chart.js"
 
 Chart.register(...registerables)
 
-const testData = {
-   labels: ['Paris', 'Nîmes', 'Toulon', 'Perpignan', 'Autre'],
-   datasets: [
-      {
-         data: [30, 40, 60, 70, 5],
-         backgroundColor: ['#77CEFF', '#0079AF', '#123E6B', '#97B0C4', '#A5C8ED'],
+const tgtYear = ref( new Date().getFullYear() )
+
+const options = ref({
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
       },
-   ],
-}
+    });
 
 const reportStore = useReportStore()
 
 function loadStats() {
-   reportStore.getDeliveriesReport("2021")
+   reportStore.getDeliveriesReport(tgtYear.value)
 }
+
+onMounted( () => {
+   if (reportStore.deliveries.datasets.length == 0) {
+      reportStore.getDeliveriesReport(tgtYear.value)
+   }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -44,6 +55,8 @@ function loadStats() {
    text-align: left;
    border: 1px solid var(--uvalib-grey-light);
    box-shadow: var(--box-shadow-light);
+   position: relative;
+   min-height: 360px;
    h3 {
       background: var(--uvalib-grey-lightest);
       font-size: 1em;
@@ -56,6 +69,16 @@ function loadStats() {
    .wait-wrap {
       text-align: center;
       padding: 30px 0 ;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color:rgba(255,255,255, 0.6);
+      z-index: 1000;
+      div.spinner {
+         margin-top: 25%;
+      }
    }
    .report {
       padding: 10px;
@@ -66,11 +89,14 @@ function loadStats() {
          justify-content: space-between;
          padding-top: 15px;
          margin-top: 5px;
-         span {
-            font-style: italic;
-         }
          button {
             margin-left: auto;
+         }
+         input {
+            margin: 0 5px;
+            width: 85px;
+            color: var(--uvalib-text);
+            text-align: center;
          }
       }
    }
