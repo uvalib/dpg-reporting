@@ -7,6 +7,7 @@
       </div>
       <div class="reports">
          <div class="column">
+            <PageTimeReport />
             <ProductivityReport />
          </div>
          <div class="column">
@@ -23,12 +24,14 @@ import ProductivityReport from '@/components/reports/ProductivityReport.vue'
 import ReportConfig from '../components/reports/ReportConfig.vue'
 import {useReportStore} from '@/stores/reporting'
 import ProblemsReport from '../components/reports/ProblemsReport.vue';
+import PageTimeReport from '../components/reports/PageTimeReport.vue';
 
 const reportStore = useReportStore()
 
 function loadStats() {
    reportStore.getProductivityReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
    reportStore.getProblemsReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
+   reportStore.getPageTimesReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
 }
 </script>
 

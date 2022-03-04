@@ -24,6 +24,13 @@ export const useReportStore = defineStore('report', {
 			labels: [],
 			datasets: [],
 			error: ""
+		},
+		pageTimes: {
+			loading: false,
+			error: "",
+			labels: [],
+			datasets: [],
+			raw: []
 		}
 	}),
 	getters: {
@@ -85,6 +92,29 @@ export const useReportStore = defineStore('report', {
 			}).catch(e => {
             this.problems.error = e
 				this.problems.loading = false
+         })
+		},
+		getPageTimesReport( workflowID, start, end ) {
+			let url = `/api/reports/pagetimes?workflow=${workflowID}&start=${dateString(start)}&end=${dateString(end)}`
+			this.pageTimes.loading = true
+			axios.get(url).then(response => {
+				this.pageTimes.labels.splice(0, this.pageTimes.labels.length)
+				this.pageTimes.datasets.splice(0, this.pageTimes.datasets.length)
+				this.pageTimes.raw.splice(0, this.pageTimes.raw.length)
+				let timeDS = {data: [], backgroundColor: "#44aacc"}
+				for (const [category, stats] of Object.entries(response.data)) {
+					this.pageTimes.labels.push(category)
+					timeDS.data.push(stats.avgPageTime)
+					let row = {category: category, units: stats.units, totalMins: stats.mins,
+						totalPages: stats.images, avgPageTime:  Number.parseFloat(stats.avgPageTime).toFixed(2)}
+					this.pageTimes.raw.push(row)
+				}
+				this.pageTimes.datasets.push(timeDS)
+				this.pageTimes.loading = false
+				this.pageTimes.error = ""
+			}).catch(e => {
+            this.pageTimes.error = e
+				this.pageTimes.loading = false
          })
 		}
 	}

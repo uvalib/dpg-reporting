@@ -252,5 +252,5 @@ func (svc *serviceContext) getPageTimesReport(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusNotImplemented, resp)
+	c.JSON(http.StatusOK, resp)
 }
