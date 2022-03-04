@@ -34,7 +34,7 @@ func (svc *serviceContext) getDeliveriesReport(c *gin.Context) {
 		DateCompleted time.Time
 	}
 	var completedOrders []order
-	err := svc.GDB.Debug().Joins("inner join units u on order_id = orders.id").
+	err := svc.GDB.Joins("inner join units u on order_id = orders.id").
 		Where("intended_use_id != ?", 110).
 		Where("order_status=?", "completed").
 		Where("date_completed like ?", fmt.Sprintf("%s%%", tgtYear)).
@@ -154,4 +154,103 @@ func (svc *serviceContext) getProblemsReport(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (svc *serviceContext) getPageTimesReport(c *gin.Context) {
+	log.Printf("INFO: get average page times report")
+	workflowID := c.Query("workflow")
+	startDate := c.Query("start")
+	endDate := c.Query("end")
+
+	log.Printf("INFO: get all catagories")
+	type category struct {
+		ID   int64
+		Name string
+	}
+	var categories []category
+	err := svc.GDB.Where("name not like ?", "Atiz%").Find(&categories).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get categories: " + err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: get unit timing")
+	type timingRec struct {
+		ProjectID int64
+		UnitID    int64
+		Category  string
+		TotalMins int64
+	}
+
+	var timings []timingRec
+	err = svc.GDB.Table("projects").Select("projects.id as project_id, projects.unit_id as unit_id, c.name as category, sum(duration_minutes) as total_mins").
+		Joins("inner join assignments a on projects.id = a.project_id").
+		Joins("inner join categories c on c.id = projects.category_id").
+		Where("workflow_id=?", workflowID).
+		Where("projects.finished_at >= ?", startDate).
+		Where("projects.finished_at <= ?", endDate).
+		Group("projects.id").Find(&timings).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get project timing report: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: unit master file counts")
+	type unitImageCountRec struct {
+		ProjectID int64
+		UnitID    int64
+		Images    int64
+	}
+
+	var unitImageCounts []unitImageCountRec
+	err = svc.GDB.Table("projects").Select("projects.id as project_id, projects.unit_id as unit_id, count(f.id) as images").
+		Joins("inner join units u on projects.unit_id = u.id").
+		Joins("inner join master_files f on f.unit_id = u.id").
+		Where("workflow_id=?", workflowID).
+		Where("projects.finished_at >= ?", startDate).
+		Where("projects.finished_at <= ?", endDate).
+		Group("u.id").Find(&unitImageCounts).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get unit image count report: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: generate report from collected stats")
+	type Stats struct {
+		TotalMins   int64   `json:"mins"`
+		TotalImages int64   `json:"images"`
+		TotalUnits  int64   `json:"units"`
+		AvgPageTime float64 `json:"avgPageTime"`
+	}
+
+	// init response with blank stats rec for each category
+	resp := make(map[string]*Stats)
+	for _, c := range categories {
+		resp[c.Name] = &Stats{}
+	}
+
+	// sum up unit / image counts for each category
+	for _, t := range timings {
+		tgtStats := resp[t.Category]
+		for _, u := range unitImageCounts {
+			if u.UnitID == t.UnitID {
+				tgtStats.TotalUnits++
+				tgtStats.TotalImages += u.Images
+				tgtStats.TotalMins += t.TotalMins
+				break
+			}
+		}
+	}
+
+	// calculate average page time for each category
+	for _, stats := range resp {
+		if stats.TotalImages > 0 {
+			stats.AvgPageTime = float64(stats.TotalMins) / float64(stats.TotalImages)
+		}
+	}
+
+	c.JSON(http.StatusNotImplemented, resp)
 }
