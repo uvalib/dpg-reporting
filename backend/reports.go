@@ -254,3 +254,136 @@ func (svc *serviceContext) getPageTimesReport(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
+func (svc *serviceContext) getRejectionsReport(c *gin.Context) {
+	log.Printf("INFO: get average page times report")
+	workflowID := c.Query("workflow")
+	startDate := c.Query("start")
+	endDate := c.Query("end")
+
+	log.Printf("INFO: lookup finished/rejected projects counts")
+	type projRec struct {
+		ID        int64
+		UnitID    int64
+		StaffID   int64
+		LastName  string
+		FirstName string
+		StepType  int64
+		Status    int64
+	}
+	var projs []projRec
+	err := svc.GDB.Table("projects").Select("projects.id as id, projects.unit_id as unit_id, m.id as staff_id, last_name, first_name, s.step_type, a.status").
+		Joins("inner join assignments a on a.project_id = projects.id").
+		Joins("inner join staff_members m on m.id = staff_member_id").
+		Joins("inner join steps s on s.id = a.step_id").
+		Where("a.status>=2").Where("a.status<=4"). // finished, rejected or error
+		Where(
+			svc.GDB.Where("s.step_type = 0").Or("s.fail_step_id is not null"), // scan or any step that can be rejected
+		).
+		Where("projects.workflow_id=?", workflowID).
+		Where("projects.finished_at >= ?", startDate).
+		Where("projects.finished_at <= ?", endDate).
+		Order("projects.id asc").Find(&projs).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get rejection stats: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: get unit masterfile counts")
+	type unitImageRec struct {
+		ID         int64
+		ImageCount int64
+	}
+	var unitImages []unitImageRec
+	err = svc.GDB.Table("units").Select("units.id, count(m.id) image_count").
+		Joins("inner join projects p on unit_id = units.id").
+		Joins("inner join master_files m on m.unit_id = units.id").
+		Where("p.workflow_id=?", workflowID).
+		Where("p.finished_at >= ?", startDate).
+		Where("p.finished_at <= ?", endDate).
+		Group("units.id").
+		Find(&unitImages).Error
+	if err != nil {
+		log.Printf("ERROR: unit master file counts: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: merge db results into rejections report")
+	type scansStats struct {
+		Projects    int64   `json:"projects"`
+		Images      int64   `json:"images"`
+		Rejections  int64   `json:"rejections"`
+		ProjectRate float64 `json:"projectRate"`
+		ImageRate   float64 `json:"imageRate"`
+	}
+	type qaStats struct {
+		Projects   int64   `json:"projects"`
+		Rejections int64   `json:"rejections"`
+		Rate       float64 `json:"rate"`
+	}
+	type respRec struct {
+		StaffID   int64
+		StaffName string      `json:"staffName"`
+		Scans     *scansStats `json:"scans"`
+		QA        *qaStats    `json:"qa"`
+	}
+	resp := make([]*respRec, 0)
+	var scannerID int64
+	for _, p := range projs {
+		var rec *respRec
+		if p.StepType == 0 {
+			// scan step. track which user originally did the scan
+			scannerID = p.StaffID
+		}
+		for _, exist := range resp {
+			if exist.StaffID == p.StaffID {
+				rec = exist
+				break
+			}
+		}
+		if rec == nil {
+			rec = &respRec{StaffID: p.StaffID, StaffName: fmt.Sprintf("%s, %s", p.LastName, p.FirstName), Scans: &scansStats{}, QA: &qaStats{}}
+			resp = append(resp, rec)
+		}
+
+		if p.StepType != 0 {
+			// qa step
+			rec.QA.Projects++
+			if p.Status == 3 {
+				log.Printf("INFO: rejection on project %d; scanner %d", p.ID, scannerID)
+				// rejected. add one to this user qa rejects and one to the original scanner scan rejects
+				rec.QA.Rejections++
+				for _, test := range resp {
+					if test.StaffID == scannerID {
+						test.Scans.Rejections++
+						break
+					}
+				}
+			}
+		} else {
+			// scan step
+			rec.Scans.Projects++
+			for _, unitMfRec := range unitImages {
+				if unitMfRec.ID == p.UnitID {
+					rec.Scans.Images += unitMfRec.ImageCount
+				}
+			}
+		}
+	}
+
+	for _, v := range resp {
+		if v.Scans.Projects > 0 {
+			v.Scans.ProjectRate = (float64(v.Scans.Rejections) / float64(v.Scans.Projects)) * 100.0
+		}
+		if v.Scans.Images > 0 {
+			v.Scans.ImageRate = (float64(v.Scans.Rejections) / float64(v.Scans.Images)) * 100.0
+		}
+		if v.QA.Projects > 0 {
+			v.QA.Rate = (float64(v.QA.Rejections) / float64(v.QA.Projects)) * 100.0
+		}
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
