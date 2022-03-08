@@ -36,6 +36,11 @@ export const useReportStore = defineStore('report', {
 			loading: false,
 			error: "",
 			data: [],
+		},
+		rates: {
+			loading: false,
+			error: "",
+			data: [],
 		}
 	}),
 	getters: {
@@ -132,6 +137,18 @@ export const useReportStore = defineStore('report', {
 			}).catch(e => {
             this.rejections.error = e
 				this.rejections.loading = false
+         })
+		},
+		getRatesReport( workflowID, start, end ) {
+			let url = `/api/reports/rates?workflow=${workflowID}&start=${dateString(start)}&end=${dateString(end)}`
+			this.rates.loading = true
+			axios.get(url).then(response => {
+				this.rates.data = response.data
+				this.rates.loading = false
+				this.rates.error = ""
+			}).catch(e => {
+            this.rates.error = e
+				this.rates.loading = false
          })
 		},
 	}
