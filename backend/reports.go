@@ -9,6 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type unitImageRec struct {
+	ID         int64
+	ImageCount int64
+}
+
 func (svc *serviceContext) getDeliveriesReport(c *gin.Context) {
 	log.Printf("INFO: get deliveries report")
 	tgtYear := c.Query("year")
@@ -271,6 +276,8 @@ func (svc *serviceContext) getRejectionsReport(c *gin.Context) {
 		StepType  int64
 		Status    int64
 	}
+	// NOTE: sort the results by project ID to prevent assignment data for multiple projects to be mixed.
+	// With this in place, data can be iterated knowing that all projects changes happen in sequence.
 	var projs []projRec
 	err := svc.GDB.Table("projects").Select("projects.id as id, projects.unit_id as unit_id, m.id as staff_id, last_name, first_name, s.step_type, a.status").
 		Joins("inner join assignments a on a.project_id = projects.id").
@@ -290,23 +297,10 @@ func (svc *serviceContext) getRejectionsReport(c *gin.Context) {
 		return
 	}
 
-	log.Printf("INFO: get unit masterfile counts")
-	type unitImageRec struct {
-		ID         int64
-		ImageCount int64
-	}
-	var unitImages []unitImageRec
-	err = svc.GDB.Table("units").Select("units.id, count(m.id) image_count").
-		Joins("inner join projects p on unit_id = units.id").
-		Joins("inner join master_files m on m.unit_id = units.id").
-		Where("p.workflow_id=?", workflowID).
-		Where("p.finished_at >= ?", startDate).
-		Where("p.finished_at <= ?", endDate).
-		Group("units.id").
-		Find(&unitImages).Error
-	if err != nil {
-		log.Printf("ERROR: unit master file counts: %s", err.Error())
-		c.String(http.StatusInternalServerError, err.Error())
+	unitImages, cntErr := svc.getUnitImagesCount(workflowID, startDate, endDate)
+	if cntErr != nil {
+		log.Printf("ERROR: unit master file counts: %s", cntErr.Error())
+		c.String(http.StatusInternalServerError, cntErr.Error())
 		return
 	}
 
@@ -368,6 +362,7 @@ func (svc *serviceContext) getRejectionsReport(c *gin.Context) {
 			for _, unitMfRec := range unitImages {
 				if unitMfRec.ID == p.UnitID {
 					rec.Scans.Images += unitMfRec.ImageCount
+					break
 				}
 			}
 		}
@@ -386,4 +381,122 @@ func (svc *serviceContext) getRejectionsReport(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (svc *serviceContext) getRatesReport(c *gin.Context) {
+	log.Printf("INFO: get average page times report")
+	workflowID := c.Query("workflow")
+	startDate := c.Query("start")
+	endDate := c.Query("end")
+
+	log.Printf("INFO: lookup finished/rejected projects info")
+	type projRec struct {
+		ID              int64
+		UnitID          int64
+		StaffID         int64
+		LastName        string
+		FirstName       string
+		StepType        int64
+		DurationMinutes int64
+	}
+	// NOTE: sort the results by project ID to prevent assignment data for multiple projects to be mixed.
+	// With this in place, data can be iterated knowing that all projects changes happen in sequence.
+	var projs []projRec
+	err := svc.GDB.Table("projects").Select("projects.id as id, projects.unit_id as unit_id, m.id as staff_id, last_name, first_name, s.step_type, a.duration_minutes").
+		Joins("inner join assignments a on a.project_id = projects.id").
+		Joins("inner join staff_members m on m.id = staff_member_id").
+		Joins("inner join steps s on s.id = a.step_id").
+		Where("a.status>=2").Where("a.status<=4"). // finished, rejected or error
+		Where(
+			svc.GDB.Where("s.step_type = 0").Or("s.fail_step_id is not null"), // scan or any step that can be rejected (qa or finalize)
+		).
+		Where("projects.workflow_id=?", workflowID).
+		Where("projects.finished_at >= ?", startDate).
+		Where("projects.finished_at <= ?", endDate).
+		Order("projects.id asc").Find(&projs).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get rates stats: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	unitImages, cntErr := svc.getUnitImagesCount(workflowID, startDate, endDate)
+	if cntErr != nil {
+		log.Printf("ERROR: unit master file counts for rates report: %s", cntErr.Error())
+		c.String(http.StatusInternalServerError, cntErr.Error())
+		return
+	}
+
+	log.Printf("INFO: merge db results into rates report")
+	type rateStats struct {
+		Images  int64   `json:"images"`
+		Minutes int64   `json:"minutes"`
+		Rate    float64 `json:"rate"`
+	}
+	type respRec struct {
+		StaffID   int64
+		StaffName string     `json:"staffName"`
+		Scans     *rateStats `json:"scans"`
+		QA        *rateStats `json:"qa"`
+	}
+	resp := make([]*respRec, 0)
+	var currProjectID int64
+	for _, p := range projs {
+		// check for existing record for this user
+		var rec *respRec
+		for _, exist := range resp {
+			if exist.StaffID == p.StaffID {
+				rec = exist
+				break
+			}
+		}
+		if rec == nil {
+			// not found; create a new rec
+			rec = &respRec{StaffID: p.StaffID, StaffName: fmt.Sprintf("%s, %s", p.LastName, p.FirstName), Scans: &rateStats{}, QA: &rateStats{}}
+			resp = append(resp, rec)
+		}
+
+		// is this a new (or first) project being processed
+		var imageAddCnt int64
+		if currProjectID != p.ID {
+			// get the unit masterfile count and add that to the totals
+			for _, unitMfRec := range unitImages {
+				if unitMfRec.ID == p.UnitID {
+					imageAddCnt = unitMfRec.ImageCount
+					break
+				}
+			}
+		}
+
+		if p.StepType != 0 {
+			// QA
+			rec.QA.Images += imageAddCnt
+			rec.QA.Minutes += p.DurationMinutes
+			rec.QA.Rate = float64(rec.QA.Images) / float64(rec.QA.Minutes)
+		} else {
+			// SCAN
+			rec.Scans.Images += imageAddCnt
+			rec.Scans.Minutes += p.DurationMinutes
+			rec.Scans.Rate = float64(rec.Scans.Images) / float64(rec.Scans.Minutes)
+		}
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
+func (svc *serviceContext) getUnitImagesCount(workflowID string, startDate string, endDate string) ([]unitImageRec, error) {
+	log.Printf("INFO: get unit masterfile counts")
+	var unitImages []unitImageRec
+	err := svc.GDB.Table("units").Select("units.id, count(m.id) image_count").
+		Joins("inner join projects p on unit_id = units.id").
+		Joins("inner join master_files m on m.unit_id = units.id").
+		Where("p.workflow_id=?", workflowID).
+		Where("p.finished_at >= ?", startDate).
+		Where("p.finished_at <= ?", endDate).
+		Group("units.id").
+		Find(&unitImages).Error
+	if err != nil {
+		return nil, err
+	}
+	return unitImages, nil
 }

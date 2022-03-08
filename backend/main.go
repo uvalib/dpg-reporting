@@ -40,6 +40,7 @@ func main() {
 		api.GET("/reports/problems", svc.getProblemsReport)
 		api.GET("/reports/pagetimes", svc.getPageTimesReport)
 		api.GET("/reports/rejections", svc.getRejectionsReport)
+		api.GET("/reports/rates", svc.getRatesReport)
 	}
 
 	// Note: in dev mode, this is never actually used. The front end is served
