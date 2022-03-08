@@ -38,7 +38,7 @@
                <td>{{r.scans.rate.toFixed(2)}}</td>
                <td class="left-bar">{{r.qa.images}}</td>
                <td>{{r.qa.minutes}}</td>
-               <td>{{r.qa.rate.toFixed(2)}}%</td>
+               <td>{{r.qa.rate.toFixed(2)}}</td>
             </tr>
          </table>
          <p class="error" v-if="reportStore.rates.error">{{reportStore.rates.error}}</p>

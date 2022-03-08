@@ -440,7 +440,6 @@ func (svc *serviceContext) getRatesReport(c *gin.Context) {
 		QA        *rateStats `json:"qa"`
 	}
 	resp := make([]*respRec, 0)
-	var currProjectID int64
 	for _, p := range projs {
 		// check for existing record for this user
 		var rec *respRec
@@ -456,26 +455,23 @@ func (svc *serviceContext) getRatesReport(c *gin.Context) {
 			resp = append(resp, rec)
 		}
 
-		// is this a new (or first) project being processed
-		var imageAddCnt int64
-		if currProjectID != p.ID {
-			// get the unit masterfile count and add that to the totals
-			for _, unitMfRec := range unitImages {
-				if unitMfRec.ID == p.UnitID {
-					imageAddCnt = unitMfRec.ImageCount
-					break
-				}
+		// get the unit masterfile count and add that to the totals
+		var unitImageCnt int64
+		for _, unitMfRec := range unitImages {
+			if unitMfRec.ID == p.UnitID {
+				unitImageCnt = unitMfRec.ImageCount
+				break
 			}
 		}
 
 		if p.StepType != 0 {
 			// QA
-			rec.QA.Images += imageAddCnt
+			rec.QA.Images += unitImageCnt
 			rec.QA.Minutes += p.DurationMinutes
 			rec.QA.Rate = float64(rec.QA.Images) / float64(rec.QA.Minutes)
 		} else {
 			// SCAN
-			rec.Scans.Images += imageAddCnt
+			rec.Scans.Images += unitImageCnt
 			rec.Scans.Minutes += p.DurationMinutes
 			rec.Scans.Rate = float64(rec.Scans.Images) / float64(rec.Scans.Minutes)
 		}
