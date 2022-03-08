@@ -31,6 +31,11 @@ export const useReportStore = defineStore('report', {
 			labels: [],
 			datasets: [],
 			raw: []
+		},
+		rejections: {
+			loading: false,
+			error: "",
+			data: [],
 		}
 	}),
 	getters: {
@@ -116,7 +121,19 @@ export const useReportStore = defineStore('report', {
             this.pageTimes.error = e
 				this.pageTimes.loading = false
          })
-		}
+		},
+		getRejectionsReport( workflowID, start, end ) {
+			let url = `/api/reports/rejections?workflow=${workflowID}&start=${dateString(start)}&end=${dateString(end)}`
+			this.rejections.loading = true
+			axios.get(url).then(response => {
+				this.rejections.data = response.data
+				this.rejections.loading = false
+				this.rejections.error = ""
+			}).catch(e => {
+            this.rejections.error = e
+				this.rejections.loading = false
+         })
+		},
 	}
 })
 

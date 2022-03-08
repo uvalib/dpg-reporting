@@ -12,6 +12,7 @@
          </div>
          <div class="column">
             <ProblemsReport />
+            <RejectionsReport />
          </div>
          <DeliveriesReport />
       </div>
@@ -23,8 +24,9 @@ import DeliveriesReport from '@/components/reports/DeliveriesReport.vue'
 import ProductivityReport from '@/components/reports/ProductivityReport.vue'
 import ReportConfig from '../components/reports/ReportConfig.vue'
 import {useReportStore} from '@/stores/reporting'
-import ProblemsReport from '../components/reports/ProblemsReport.vue';
-import PageTimeReport from '../components/reports/PageTimeReport.vue';
+import ProblemsReport from '../components/reports/ProblemsReport.vue'
+import PageTimeReport from '../components/reports/PageTimeReport.vue'
+import RejectionsReport from '../components/reports/RejectionsReport.vue'
 
 const reportStore = useReportStore()
 
