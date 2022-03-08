@@ -36,6 +36,8 @@ function loadStats() {
    reportStore.getProductivityReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
    reportStore.getProblemsReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
    reportStore.getPageTimesReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
+   reportStore.getRejectionsReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
+   reportStore.getRatesReport(reportStore.workflowID, reportStore.startDate, reportStore.endDate)
 }
 </script>
 
