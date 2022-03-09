@@ -173,7 +173,7 @@ func (svc *serviceContext) getPageTimesReport(c *gin.Context) {
 		Name string
 	}
 	var categories []category
-	err := svc.GDB.Where("name not like ?", "Atiz%").Find(&categories).Error
+	err := svc.GDB.Find(&categories).Error
 	if err != nil {
 		log.Printf("ERROR: unable to get categories: " + err.Error())
 		c.String(http.StatusInternalServerError, err.Error())
@@ -203,23 +203,10 @@ func (svc *serviceContext) getPageTimesReport(c *gin.Context) {
 	}
 
 	log.Printf("INFO: unit master file counts")
-	type unitImageCountRec struct {
-		ProjectID int64
-		UnitID    int64
-		Images    int64
-	}
-
-	var unitImageCounts []unitImageCountRec
-	err = svc.GDB.Table("projects").Select("projects.id as project_id, projects.unit_id as unit_id, count(f.id) as images").
-		Joins("inner join units u on projects.unit_id = u.id").
-		Joins("inner join master_files f on f.unit_id = u.id").
-		Where("workflow_id=?", workflowID).
-		Where("projects.finished_at >= ?", startDate).
-		Where("projects.finished_at <= ?", endDate).
-		Group("u.id").Find(&unitImageCounts).Error
-	if err != nil {
-		log.Printf("ERROR: unable to get unit image count report: %s", err.Error())
-		c.String(http.StatusInternalServerError, err.Error())
+	unitImageCounts, uicErr := svc.getUnitImagesCount(workflowID, startDate, endDate)
+	if uicErr != nil {
+		log.Printf("ERROR: unable to get unit image count report: %s", uicErr.Error())
+		c.String(http.StatusInternalServerError, uicErr.Error())
 		return
 	}
 
@@ -241,9 +228,9 @@ func (svc *serviceContext) getPageTimesReport(c *gin.Context) {
 	for _, t := range timings {
 		tgtStats := resp[t.Category]
 		for _, u := range unitImageCounts {
-			if u.UnitID == t.UnitID {
+			if u.ID == t.UnitID {
 				tgtStats.TotalUnits++
-				tgtStats.TotalImages += u.Images
+				tgtStats.TotalImages += u.ImageCount
 				tgtStats.TotalMins += t.TotalMins
 				break
 			}
