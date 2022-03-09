@@ -1,15 +1,15 @@
 <template>
    <div class="reports-card">
       <h3>Productivity</h3>
-      <div class="report">
+       <div  v-if="reportStore.productivity.loading" class="wait-wrap">
+         <WaitSpinner/>
+      </div>
+      <div v-else class="report">
          <BarChart :chartData="reportStore.productivity" :options="options"/>
          <div class="total">
             <label>Total Completed Projects:</label><span class="total">{{reportStore.productivity.totalCompleted}}</span>
          </div>
          <p class="error" v-if="reportStore.productivity.error">{{reportStore.productivity.error}}</p>
-      </div>
-      <div  v-if="reportStore.productivity.loading" class="wait-wrap">
-         <WaitSpinner/>
       </div>
    </div>
 </template>

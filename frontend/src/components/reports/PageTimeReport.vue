@@ -1,7 +1,10 @@
 <template>
    <div class="reports-card">
       <h3>Average Page Completion Time</h3>
-      <div class="report">
+      <div  v-if="reportStore.pageTimes.loading" class="wait-wrap">
+         <WaitSpinner/>
+      </div>
+      <div v-else class="report">
          <BarChart :chartData="reportStore.pageTimes" :options="options"/>
          <table class="raw-data">
             <tr>
@@ -20,9 +23,6 @@
             </tr>
          </table>
          <p class="error" v-if="reportStore.pageTimes.error">{{reportStore.pageTimes.error}}</p>
-      </div>
-      <div  v-if="reportStore.pageTimes.loading" class="wait-wrap">
-         <WaitSpinner/>
       </div>
    </div>
 </template>

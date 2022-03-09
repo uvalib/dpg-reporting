@@ -1,7 +1,10 @@
 <template>
    <div class="reports-card">
       <h3>Patron Deliveries</h3>
-      <div class="report">
+      <div  v-if="reportStore.deliveries.loading" class="wait-wrap">
+         <WaitSpinner/>
+      </div>
+      <div v-else class="report">
          <LineChart :chartData="reportStore.deliveries" :options="options" />
          <p class="error" v-if="reportStore.deliveries.error">{{reportStore.deliveries.error}}</p>
          <div class="controls">
@@ -10,9 +13,6 @@
             </span>
             <button @click="loadStats">Generate</button>
          </div>
-      </div>
-      <div  v-if="reportStore.deliveries.loading" class="wait-wrap">
-         <WaitSpinner/>
       </div>
    </div>
 </template>
