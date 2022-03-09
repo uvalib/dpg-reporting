@@ -396,20 +396,20 @@ func (svc *serviceContext) getRatesReport(c *gin.Context) {
 		StaffID         int64
 		LastName        string
 		FirstName       string
-		StepType        int64
+		StepName        string
 		DurationMinutes int64
 	}
 	// NOTE: sort the results by project ID to prevent assignment data for multiple projects to be mixed.
 	// With this in place, data can be iterated knowing that all projects changes happen in sequence.
 	var projs []projRec
-	err := svc.GDB.Table("projects").Select("projects.id as id, projects.unit_id as unit_id, m.id as staff_id, last_name, first_name, s.step_type, a.duration_minutes").
+	err := svc.GDB.Table("projects").
+		Select("projects.id as id, projects.unit_id as unit_id, m.id as staff_id, last_name, first_name, s.name as step_name, a.duration_minutes").
 		Joins("inner join assignments a on a.project_id = projects.id").
 		Joins("inner join staff_members m on m.id = staff_member_id").
 		Joins("inner join steps s on s.id = a.step_id").
 		Where("a.status>=2").Where("a.status<=4"). // finished, rejected or error
-		Where(
-			svc.GDB.Where("s.step_type = 0").Or("s.fail_step_id is not null"), // scan or any step that can be rejected (qa or finalize)
-		).
+		Where("a.duration_minutes is not null").   // valid duration
+		Where("s.step_type != 2").                 // no error steps
 		Where("projects.workflow_id=?", workflowID).
 		Where("projects.finished_at >= ?", startDate).
 		Where("projects.finished_at <= ?", endDate).
@@ -429,6 +429,7 @@ func (svc *serviceContext) getRatesReport(c *gin.Context) {
 
 	log.Printf("INFO: merge db results into rates report")
 	type rateStats struct {
+		UnitIDs []int64 `json:"-"`
 		Images  int64   `json:"images"`
 		Minutes int64   `json:"minutes"`
 		Rate    float64 `json:"rate"`
@@ -440,7 +441,11 @@ func (svc *serviceContext) getRatesReport(c *gin.Context) {
 		QA        *rateStats `json:"qa"`
 	}
 	resp := make([]*respRec, 0)
+	var currUnitID int64
+	var currUnitImageCnt int64
+	scanSteps := []string{"Scan", "Process", "Create Metadata"}
 	for _, p := range projs {
+
 		// check for existing record for this user
 		var rec *respRec
 		for _, exist := range resp {
@@ -449,32 +454,47 @@ func (svc *serviceContext) getRatesReport(c *gin.Context) {
 				break
 			}
 		}
+
+		// user rec not found; create a new one
 		if rec == nil {
-			// not found; create a new rec
-			rec = &respRec{StaffID: p.StaffID, StaffName: fmt.Sprintf("%s, %s", p.LastName, p.FirstName), Scans: &rateStats{}, QA: &rateStats{}}
+			rec = &respRec{StaffID: p.StaffID, StaffName: fmt.Sprintf("%s, %s", p.LastName, p.FirstName),
+				Scans: &rateStats{UnitIDs: make([]int64, 0)}, QA: &rateStats{UnitIDs: make([]int64, 0)}}
 			resp = append(resp, rec)
 		}
 
-		// get the unit masterfile count and add that to the totals
-		var unitImageCnt int64
-		for _, unitMfRec := range unitImages {
-			if unitMfRec.ID == p.UnitID {
-				unitImageCnt = unitMfRec.ImageCount
+		// determine if this step is scan or QA and grab a pointer to teh correct user stats
+		tgtRateStats := rec.QA
+		for _, scanName := range scanSteps {
+			if scanName == p.StepName {
+				tgtRateStats = rec.Scans
 				break
 			}
 		}
 
-		if p.StepType != 0 {
-			// QA
-			rec.QA.Images += unitImageCnt
-			rec.QA.Minutes += p.DurationMinutes
-			rec.QA.Rate = float64(rec.QA.Images) / float64(rec.QA.Minutes)
-		} else {
-			// SCAN
-			rec.Scans.Images += unitImageCnt
-			rec.Scans.Minutes += p.DurationMinutes
-			rec.Scans.Rate = float64(rec.Scans.Images) / float64(rec.Scans.Minutes)
+		// the first time a new unitID is encountered get the masterfile count
+		if currUnitID != p.UnitID {
+			currUnitID = p.UnitID
+			for _, unitMfRec := range unitImages {
+				if unitMfRec.ID == p.UnitID {
+					currUnitImageCnt = unitMfRec.ImageCount
+					break
+				}
+			}
 		}
+
+		unitCounted := false
+		for _, uid := range tgtRateStats.UnitIDs {
+			if uid == p.UnitID {
+				unitCounted = true
+				break
+			}
+		}
+		if unitCounted == false {
+			tgtRateStats.Images += currUnitImageCnt
+			tgtRateStats.UnitIDs = append(tgtRateStats.UnitIDs, p.UnitID)
+		}
+		tgtRateStats.Minutes += p.DurationMinutes
+		tgtRateStats.Rate = float64(tgtRateStats.Images) / float64(tgtRateStats.Minutes)
 	}
 
 	c.JSON(http.StatusOK, resp)
