@@ -10,7 +10,7 @@ import (
 )
 
 // Version of the service
-const Version = "1.0.0"
+const Version = "1.1.0"
 
 func main() {
 	// Load cfg
@@ -29,10 +29,11 @@ func main() {
 	router.GET("/healthcheck", svc.healthCheck)
 	api := router.Group("/api")
 	{
-		api.GET("/stats/images", svc.getImageStats)
-		api.GET("/stats/storage", svc.getStorageStats)
-		api.GET("/stats/metadata", svc.getMetadataStats)
 		api.GET("/stats/archive", svc.getArchiveStats)
+		api.GET("/stats/images", svc.getImageStats)
+		api.GET("/stats/metadata", svc.getMetadataStats)
+		api.GET("/stats/published", svc.getPublishedStats)
+		api.GET("/stats/storage", svc.getStorageStats)
 
 		api.GET("workflows", svc.getWorkflows)
 		api.GET("/reports/deliveries", svc.getDeliveriesReport)

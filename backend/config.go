@@ -14,8 +14,10 @@ type dbConfig struct {
 }
 
 type configData struct {
-	port int
-	db   dbConfig
+	port     int
+	db       dbConfig
+	apiURL   string
+	adminURL string
 }
 
 func getConfiguration() *configData {
@@ -28,6 +30,10 @@ func getConfiguration() *configData {
 	flag.StringVar(&config.db.Name, "dbname", "", "Database name")
 	flag.StringVar(&config.db.User, "dbuser", "", "Database user")
 	flag.StringVar(&config.db.Pass, "dbpass", "", "Database password")
+
+	// tracksys API / Admin URLs
+	flag.StringVar(&config.apiURL, "tsapi", "https://tracksys-api-ws.internal.lib.virginia.edu", "URL for TrackSys API")
+	flag.StringVar(&config.adminURL, "tsadmin", "https://tracksys.lib.virginia.edu/admin", "URL for TrackSys ADMIN interface")
 
 	flag.Parse()
 

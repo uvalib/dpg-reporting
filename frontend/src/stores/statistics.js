@@ -37,6 +37,12 @@ export const useStatsStore = defineStore('stats', {
 			photo: 0,
 			error: "",
 			loading: false,
+		},
+		publishedStats: {
+			loading: false,
+			virgo: [],
+			archivesSpace: [],
+			error: ""
 		}
 	}),
 	getters: {
@@ -48,6 +54,7 @@ export const useStatsStore = defineStore('stats', {
 				this.getStorageSats()
 				this.getMetadataSats()
 				this.getArchiveSats()
+				this.getPublishedSats()
 			}
 		},
 
@@ -82,6 +89,20 @@ export const useStatsStore = defineStore('stats', {
 			}).catch(e => {
             this.storageStats.error = e
 				this.storageStats.loading = false
+         })
+		},
+
+		getPublishedSats() {
+			let url = "/api/stats/published"
+			this.publishedStats.loading = true
+			axios.get(url).then(response => {
+				this.publishedStats.virgo = response.data.virgo
+				this.publishedStats.archivesSpace = response.data.archivesSpace
+				this.publishedStats.loading = false
+				this.publishedStats.error = ""
+			}).catch(e => {
+            this.publishedStats.error = e
+				this.publishedStats.loading = false
          })
 		},
 

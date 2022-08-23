@@ -123,6 +123,61 @@ func (svc *serviceContext) getMetadataStats(c *gin.Context) {
 	c.JSON(http.StatusOK, metadataResp)
 }
 
+func (svc *serviceContext) getPublishedStats(c *gin.Context) {
+	log.Printf("INFO: get published statistics")
+
+	type publishedVirgo struct {
+		ID       uint64 `json:"id"`
+		PID      string `gorm:"column:pid" json:"pid"`
+		Title    string `json:"title"`
+		ThumbURL string `gorm:"-" json:"thumbURL"`
+		AdminURL string `gorm:"-" json:"adminURL"`
+	}
+	type publishedAS struct {
+		ID          uint64 `json:"id"`
+		ExternalURL string `gorm:"column:external_uri" json:"externalURL"`
+		Title       string `json:"title"`
+		AdminURL    string `gorm:"-" json:"adminURL"`
+	}
+	type respData struct {
+		Virgo         []*publishedVirgo `json:"virgo"`
+		ArchivesSpace []*publishedAS    `json:"archivesSpace"`
+	}
+	var resp respData
+	err := svc.GDB.Table("metadata").Where("date_dl_ingest is not null").Where("type=?", "SirsiMetadata").
+		Limit(20).Order("date_dl_ingest DESC").Find(&resp.Virgo).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get recent virgo publication stats: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	for _, v := range resp.Virgo {
+		v.AdminURL = fmt.Sprintf("%s/sirsi_metadata/%d", svc.TrackSysAdmin, v.ID)
+		urlBytes, err := svc.apiGetRequest(fmt.Sprintf("%s/api/metadata/%s/exemplar", svc.TrackSysAPI, v.PID))
+		if err != nil {
+			log.Printf("ERROR: unable to get exemplar for %s: %s", v.PID, err.Message)
+		} else {
+			v.ThumbURL = string(urlBytes)
+		}
+	}
+
+	err = svc.GDB.Table("metadata").Where("date_dl_ingest is not null").
+		Where("type=?", "ExternalMetadata").Where("external_system_id=?", 1).
+		Limit(20).Order("date_dl_ingest DESC").Find(&resp.ArchivesSpace).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get recent archivesspace publication stats: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	for _, v := range resp.ArchivesSpace {
+		v.AdminURL = fmt.Sprintf("%s/external_metadata/%d", svc.TrackSysAdmin, v.ID)
+		v.ExternalURL = fmt.Sprintf("https://archives.lib.virginia.edu%s", v.ExternalURL)
+
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
 func (svc *serviceContext) getStorageStats(c *gin.Context) {
 	log.Printf("INFO: get storage statistics")
 
