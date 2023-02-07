@@ -152,7 +152,7 @@ func (svc *serviceContext) getPublishedStats(c *gin.Context) {
 		return
 	}
 	for _, v := range resp.Virgo {
-		v.AdminURL = fmt.Sprintf("%s/sirsi_metadata/%d", svc.TrackSysAdmin, v.ID)
+		v.AdminURL = fmt.Sprintf("%s/metadata/%d", svc.TrackSysAdmin, v.ID)
 		urlBytes, err := svc.apiGetRequest(fmt.Sprintf("%s/api/metadata/%s/exemplar", svc.TrackSysAPI, v.PID))
 		if err != nil {
 			log.Printf("ERROR: unable to get exemplar for %s: %s", v.PID, err.Message)
@@ -170,7 +170,7 @@ func (svc *serviceContext) getPublishedStats(c *gin.Context) {
 		return
 	}
 	for _, v := range resp.ArchivesSpace {
-		v.AdminURL = fmt.Sprintf("%s/external_metadata/%d", svc.TrackSysAdmin, v.ID)
+		v.AdminURL = fmt.Sprintf("%s/metadata/%d", svc.TrackSysAdmin, v.ID)
 		v.ExternalURL = fmt.Sprintf("https://archives.lib.virginia.edu%s", v.ExternalURL)
 
 	}
