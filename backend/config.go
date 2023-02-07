@@ -51,6 +51,9 @@ func getConfiguration() *configData {
 	}
 
 	log.Printf("[CONFIG] port          = [%d]", config.port)
+	log.Printf("[CONFIG] tsadmi        = [%s]", config.adminURL)
+	log.Printf("[CONFIG] tsapi         = [%s]", config.apiURL)
+	log.Printf("[CONFIG] port          = [%d]", config.port)
 	log.Printf("[CONFIG] dbhost        = [%s]", config.db.Host)
 	log.Printf("[CONFIG] dbport        = [%d]", config.db.Port)
 	log.Printf("[CONFIG] dbname        = [%s]", config.db.Name)
