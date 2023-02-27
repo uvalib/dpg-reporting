@@ -21,8 +21,8 @@ type serviceContext struct {
 	Version       string
 	GDB           *gorm.DB
 	HTTPClient    *http.Client
-	TrackSysAPI   string
 	TrackSysAdmin string
+	IIIFURL       string
 }
 
 // RequestError contains http status code and message for a failed HTTP request
@@ -33,7 +33,7 @@ type RequestError struct {
 
 // InitializeService sets up the service context for all API handlers
 func initializeService(version string, cfg *configData) *serviceContext {
-	ctx := serviceContext{Version: version, TrackSysAPI: cfg.apiURL, TrackSysAdmin: cfg.adminURL}
+	ctx := serviceContext{Version: version, TrackSysAdmin: cfg.adminURL, IIIFURL: cfg.iiifURL}
 
 	log.Printf("INFO: connecting to DB...")
 	connectStr := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",

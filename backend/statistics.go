@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+type imageTechMeta struct {
+	ID           int64 `json:"-"`
+	MasterFileID int64 `json:"-"`
+	Width        uint  `json:"width"`
+	Height       uint  `json:"height"`
+	Orientation  uint  `json:"orientation"`
+}
+
+type masterFile struct {
+	ID            int64         `json:"id"`
+	PID           string        `gorm:"column:pid" json:"pid"`
+	ImageTechMeta imageTechMeta `json:"tech_meta"`
+}
 
 func (svc *serviceContext) getImageStats(c *gin.Context) {
 	log.Printf("INFO: get image statistics")
@@ -153,12 +168,7 @@ func (svc *serviceContext) getPublishedStats(c *gin.Context) {
 	}
 	for _, v := range resp.Virgo {
 		v.AdminURL = fmt.Sprintf("%s/metadata/%d", svc.TrackSysAdmin, v.ID)
-		urlBytes, err := svc.apiGetRequest(fmt.Sprintf("%s/api/metadata/%s/exemplar", svc.TrackSysAPI, v.PID))
-		if err != nil {
-			log.Printf("ERROR: unable to get exemplar for %s: %s", v.PID, err.Message)
-		} else {
-			v.ThumbURL = string(urlBytes)
-		}
+		v.ThumbURL = svc.getExemplarThumbURL(v.ID)
 	}
 
 	err = svc.GDB.Table("metadata").Where("date_dl_ingest is not null").
@@ -176,6 +186,29 @@ func (svc *serviceContext) getPublishedStats(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (svc *serviceContext) getExemplarThumbURL(mdID uint64) string {
+	log.Printf("INFO: get exemplar for %d", mdID)
+	var mf masterFile
+	err := svc.GDB.Preload("ImageTechMeta").Where("metadata_id=? and exemplar=1", mdID).First(&mf).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) == false {
+			log.Printf("ERROR: unable to get examplar for %d: %s", mdID, err.Error())
+			return ""
+		}
+		log.Printf("INFO: no exemplar set for metadata id %d; choosing first masterfile", mdID)
+		err = svc.GDB.Where("metadata_id=?", mdID).Order("filename asc").First(&mf).Error
+		if err != nil {
+			log.Printf("ERROR: unable to get examplar for %d: %s", mdID, err.Error())
+			return ""
+		}
+	}
+
+	// orientation is enum type: none: 0, flip_y_axis: 1, rotate90: 2, rotate180: 3, rotate270
+	rotations := []string{"0", "!0", "90", "180", "270"}
+	exemplarURL := fmt.Sprintf("%s/%s/full/!125,200/%s/default.jpg", svc.IIIFURL, mf.PID, rotations[mf.ImageTechMeta.Orientation])
+	return exemplarURL
 }
 
 func (svc *serviceContext) getStorageStats(c *gin.Context) {

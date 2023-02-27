@@ -16,8 +16,8 @@ type dbConfig struct {
 type configData struct {
 	port     int
 	db       dbConfig
-	apiURL   string
 	adminURL string
+	iiifURL  string
 }
 
 func getConfiguration() *configData {
@@ -30,10 +30,8 @@ func getConfiguration() *configData {
 	flag.StringVar(&config.db.Name, "dbname", "", "Database name")
 	flag.StringVar(&config.db.User, "dbuser", "", "Database user")
 	flag.StringVar(&config.db.Pass, "dbpass", "", "Database password")
-
-	// tracksys API / Admin URLs
-	flag.StringVar(&config.apiURL, "tsapi", "https://tracksys-api-ws.internal.lib.virginia.edu", "URL for TrackSys API")
 	flag.StringVar(&config.adminURL, "tsadmin", "https://tracksys.lib.virginia.edu/admin", "URL for TrackSys ADMIN interface")
+	flag.StringVar(&config.iiifURL, "iiif", "https://iiif.lib.virginia.edu/iiif", "URL UVA IIIF server")
 
 	flag.Parse()
 
@@ -51,8 +49,8 @@ func getConfiguration() *configData {
 	}
 
 	log.Printf("[CONFIG] port          = [%d]", config.port)
+	log.Printf("[CONFIG] iiif          = [%s]", config.iiifURL)
 	log.Printf("[CONFIG] tsadmi        = [%s]", config.adminURL)
-	log.Printf("[CONFIG] tsapi         = [%s]", config.apiURL)
 	log.Printf("[CONFIG] port          = [%d]", config.port)
 	log.Printf("[CONFIG] dbhost        = [%s]", config.db.Host)
 	log.Printf("[CONFIG] dbport        = [%d]", config.db.Port)
