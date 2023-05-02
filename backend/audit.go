@@ -1,0 +1,98 @@
+package main
+
+import (
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+type auditDetail struct {
+	Label string `json:"label"`
+	Total int64  `json:"total"`
+}
+
+type auditStats struct {
+	TotalAudited int64         `json:"totalAudited"`
+	Results      []auditDetail `json:"results"`
+}
+
+type masterFileAudit struct {
+	ID             int64       `json:"id"`
+	MasterFileID   int64       `json:"masterFileID"`
+	MasterFile     *masterFile `gorm:"foreignKey:MasterFileID" json:"masterFile,omitempty"`
+	ArchiveExists  bool        `json:"archiveExists"`
+	ChecksumExists bool        `json:"checksumExists"`
+	ChecksumMatch  bool        `json:"checksumMatch"`
+	AuditChecksum  string      `json:"auditChecksum"`
+	IIIFExists     bool        `gorm:"column:iiif_exists" json:"iiifExists"`
+	AuditedAt      time.Time   `json:"auditedAt"`
+}
+
+func (svc *serviceContext) getAuditResults(c *gin.Context) {
+	log.Printf("INFO: get audit results")
+	resp := auditStats{TotalAudited: 0, Results: make([]auditDetail, 0)}
+
+	log.Printf("INFO: lookup total audit count")
+	err := svc.GDB.Table("master_file_audits").Count(&resp.TotalAudited).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get total audit count: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	log.Printf("INFO: lookup successful audit count")
+	successData := auditDetail{Label: "No Errors", Total: 0}
+	err = svc.GDB.Table("master_file_audits").Where("archive_exists=? and checksum_exists=? and checksum_match=? and iiif_exists=?", 1, 1, 1, 1).
+		Count(&successData.Total).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get successful audit count: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	resp.Results = append(resp.Results, successData)
+
+	log.Printf("INFO: lookup missing archive count")
+	noArchive := auditDetail{Label: "Missing Archive", Total: 0}
+	err = svc.GDB.Table("master_file_audits").Where("archive_exists=?", 0).Count(&noArchive.Total).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get missing archive count: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	resp.Results = append(resp.Results, noArchive)
+
+	log.Printf("INFO: lookup missing checksum count")
+	noChecksum := auditDetail{Label: "Missing Checksum", Total: 0}
+	err = svc.GDB.Table("master_file_audits").Where("checksum_exists=?", 0).Count(&noChecksum.Total).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get missing checksum count: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	resp.Results = append(resp.Results, noChecksum)
+
+	log.Printf("INFO: lookup missing iiif count")
+	noIIIF := auditDetail{Label: "Missing IIIF", Total: 0}
+	err = svc.GDB.Table("master_file_audits").Where("iiif_exists=?", 0).Count(&noIIIF.Total).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get missing iiif count: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	resp.Results = append(resp.Results, noIIIF)
+
+	log.Printf("INFO: lookup failed checksum count")
+	badChecksum := auditDetail{Label: "Checksum Mismatch", Total: 0}
+	err = svc.GDB.Table("master_file_audits").Where("archive_exists=? and checksum_exists=? and checksum_match=?", 1, 1, 0).
+		Count(&badChecksum.Total).Error
+	if err != nil {
+		log.Printf("ERROR: unable to get missing iiif count: %s", err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	resp.Results = append(resp.Results, badChecksum)
+
+	c.JSON(http.StatusOK, resp)
+}

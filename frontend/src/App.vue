@@ -16,6 +16,7 @@
       <ul>
          <li><router-link to="/">DPG Statistics</router-link></li>
          <li><router-link to="/reports">Digitization Reports</router-link></li>
+         <li><router-link to="/audit">Master File Audit</router-link></li>
       </ul>
    </nav>
    <router-view />
