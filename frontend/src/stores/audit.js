@@ -7,7 +7,9 @@ export const useAuditStore = defineStore('audit', {
 		labels: [],
 		datasets: [{data: [], backgroundColor: []}],
 		totalAudited: 0,
-		error: ""
+		error: "",
+		auditYears: [],
+		targetYear: "all"
 	}),
 	getters: {
 	},
@@ -17,7 +19,15 @@ export const useAuditStore = defineStore('audit', {
 			this.labels = []
 			this.datasets = [],
 			this.totalAudited = 0
-			axios.get(`/api/audit`).then(response => {
+			if (this.auditYears.length == 0 ) {
+				this.auditYears.push({label: "All", value: "all"})
+				let startYear = 2009
+				let endYear = new Date().getFullYear()
+				for ( let y=startYear; y<=endYear;y++) {
+					this.auditYears.push({label: `${y}`, value: `${y}`})
+				}
+			}
+			axios.get(`/api/audit?year=${this.targetYear}`).then(response => {
 				let result = {data: [],
 					backgroundColor: ["#44aacc","#cc4444","#cc4444","#cc4444", "#cc4444"],
 				}

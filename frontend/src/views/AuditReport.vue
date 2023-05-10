@@ -4,6 +4,13 @@
       <WaitSpinner/>
    </div>
    <div v-else class="report">
+      <div class="control-bar">
+         <label>Audit Year:</label>
+         <select v-model="auditStore.targetYear">
+            <option v-for="w in auditStore.auditYears" :value="w.value" :key="`wf${w.value}`">{{w.label}}</option>
+         </select>
+         <button @click="auditStore.getAuditReport()">Generate Audit Report</button>
+      </div>
       <BarChart :chartData="auditStore" :options="options"/>
       <div class="total">
          <label>Total Audited:</label><span class="total">{{auditStore.totalAudited}}</span>
@@ -53,6 +60,15 @@ onMounted( () => {
 }
 .report {
    margin: 10px 50px;
+   .control-bar {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+      label, select {
+         margin-right: 10px;
+      }
+   }
    .total {
       text-align: center;
       margin: 20px 0;
