@@ -16,7 +16,7 @@ export default defineConfig({
       port: 8080,
       proxy: {
          '/version': {
-            target: process.env.VITE_REPORTING_API,
+            target: process.env.VITE_REPORTING_API, //  export VITE_REPORTING_API=http://localhost:8085
             changeOrigin: true
          },
          '/healthcheck': {
