@@ -3,18 +3,16 @@
       <h2>DPG Statistics</h2>
        <div class="date-range">
          <label>Statistics from: </label>
-         <select v-model="statsStore.dateRangeType">
+         <select v-model="statsStore.dateRangeType" @change="modeChanged">
             <option value="before">BEFORE</option>
             <option value="after">AFTER</option>
             <option value="between">BETWEEN</option>
          </select>
 
-         <datepicker :typeable="true" v-model="statsStore.startDate" />
+         <VueDatePicker v-model="statsStore.startDate"  :enable-time-picker="false" format="yyyy-MM-dd" auto-apply :clearable="false" />
          <template v-if="statsStore.dateRangeType == 'between' ">
-            <span class="date-sep">and</span>
-            <datepicker :typeable="true" :clearable="true" v-model="statsStore.endDate" />
+            <VueDatePicker v-model="statsStore.endDate"  :enable-time-picker="false" format="yyyy-MM-dd" auto-apply :clearable="false" />
          </template>
-
          <button class="all-btn" @click="getAllClicked">Get All Statistics</button>
       </div>
       <div class="stats">
@@ -71,19 +69,26 @@
 </template>
 
 <script setup>
-import Datepicker from 'vue3-datepicker'
 import {useStatsStore} from '@/stores/statistics'
 import ImageStats from '../components/ImageStats.vue'
-import StorageStats from '../components/StorageStats.vue';
-import MetadataStats from '../components/MetadataStats.vue';
+import StorageStats from '../components/StorageStats.vue'
+import MetadataStats from '../components/MetadataStats.vue'
 import { onMounted } from 'vue'
-import ArchiveStats from '../components/ArchiveStats.vue';
-import WaitSpinner from '../components/WaitSpinner.vue';
+import ArchiveStats from '../components/ArchiveStats.vue'
+import WaitSpinner from '../components/WaitSpinner.vue'
 
 const statsStore = useStatsStore()
 
 onMounted( () => {
    statsStore.getAllStats(false)
+})
+
+const modeChanged = (() => {
+   console.log(statsStore.dateRangeType)
+   if ( statsStore.dateRangeType == "between") {
+      statsStore.endDate = new Date()
+      statsStore.endDate =  statsStore.endDate.setMonth(statsStore.startDate.getMonth() + 3)
+   }
 })
 
 function getAllClicked() {
@@ -95,24 +100,28 @@ function getAllClicked() {
 .date-range {
    display:flex;
    flex-flow: row nowrap;
+   justify-content: flex-start;
+   align-items: stretch;
+   gap: 10px;
    padding: 20px;
    border-bottom: 1px solid var(--uvalib-grey-light);
    margin-bottom: 35px;
    border-top: 1px solid var(--uvalib-grey-light);
 
+   :deep(.dp__main) {
+      max-width: 150px !important;
+   }
+   :deep(input.dp__input) {
+      padding-left: 35px  !important;
+   }
+
    label {
       font-weight: bold;
-      margin-right: 10px;
-   }
-   select {
-      margin-right: 10px;
-   }
-   .date-sep {
-      margin-right: 10px;
-      display: inline-block;
+      white-space: nowrap;
    }
    .all-btn {
       margin-left: auto;
+      white-space: nowrap;
    }
 }
 .wait-wrap {

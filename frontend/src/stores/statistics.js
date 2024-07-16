@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
+import moment from 'moment'
 
 export const useStatsStore = defineStore('stats', {
 	state: () => ({
@@ -157,17 +158,11 @@ export const useStatsStore = defineStore('stats', {
 function getDateParam(rangeType, startDate, endDate) {
 	let dateParam = ""
 	if (rangeType == "before") {
-		dateParam = `BEFORE ${dateString(startDate)}`
+		dateParam = `BEFORE ${moment(startDate).format("YYYY-MM-DD")}`
 	} else if (rangeType == "after") {
-		dateParam = `AFTER ${dateString(startDate)}`
+		dateParam = `AFTER ${moment(startDate).format("YYYY-MM-DD")}`
 	} else {
-		dateParam = `${dateString(startDate)} TO ${dateString(endDate)}`
+		dateParam = `${moment(startDate).format("YYYY-MM-DD")} TO ${moment(endDate).format("YYYY-MM-DD")}`
 	}
 	return dateParam
-}
-
-function dateString(date) {
-	let mo = `${date.getMonth()+1}`
-	let day = `${date.getDate()}`
-	return `${date.getFullYear()}-${mo.padStart(2,'0')}-${day.padStart(2,'0')}`
 }
