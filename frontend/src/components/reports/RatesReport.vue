@@ -3,43 +3,45 @@
       <h3>Rates</h3>
       <div class="report">
          <table class="rate-stats">
-            <tr>
-               <th class="top-header"></th>
-               <th class="top-header left-bar" colspan="3">Scans</th>
-               <th class="top-header left-bar" colspan="3">QA</th>
-            </tr>
-             <tr>
-               <th class="sub-header">
-                  <span>Staff</span>
-               </th>
-               <th class="left-bar sub-header">
-                  <span>Images</span>
-               </th>
-               <th class="sub-header">
-                  <span>Minutes</span>
-               </th>
-               <th class="sub-header">
-                  <span>Images/Minute</span>
-               </th>
-               <th class="left-bar sub-header">
-                  <span>Images</span>
-               </th>
-               <th class="sub-header">
-                  <span>Minutes</span>
-               </th>
-               <th class="sub-header">
-                  <span>Images/Minute</span>
-               </th>
-            </tr>
-            <tr v-for="r in reportStore.rates.data" :key="`reject${r.staffID}`">
-               <td class="left">{{r.staffName}}</td>
-               <td class="left-bar">{{r.scans.images}}</td>
-               <td>{{r.scans.minutes}}</td>
-               <td>{{r.scans.rate.toFixed(2)}}</td>
-               <td class="left-bar">{{r.qa.images}}</td>
-               <td>{{r.qa.minutes}}</td>
-               <td>{{r.qa.rate.toFixed(2)}}</td>
-            </tr>
+            <tbody>
+               <tr>
+                  <th class="top-header"></th>
+                  <th class="top-header left-bar" colspan="3">Scans</th>
+                  <th class="top-header left-bar" colspan="3">QA</th>
+               </tr>
+               <tr>
+                  <th class="sub-header">
+                     <span>Staff</span>
+                  </th>
+                  <th class="left-bar sub-header">
+                     <span>Images</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Minutes</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Images/Minute</span>
+                  </th>
+                  <th class="left-bar sub-header">
+                     <span>Images</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Minutes</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Images/Minute</span>
+                  </th>
+               </tr>
+               <tr v-for="r in reportStore.rates.data" :key="`reject${r.staffID}`">
+                  <td class="left">{{r.staffName}}</td>
+                  <td class="left-bar">{{r.scans.images}}</td>
+                  <td>{{r.scans.minutes}}</td>
+                  <td>{{r.scans.rate.toFixed(2)}}</td>
+                  <td class="left-bar">{{r.qa.images}}</td>
+                  <td>{{r.qa.minutes}}</td>
+                  <td>{{r.qa.rate.toFixed(2)}}</td>
+               </tr>
+            </tbody>
          </table>
          <p class="error" v-if="reportStore.rates.error">{{reportStore.rates.error}}</p>
       </div>

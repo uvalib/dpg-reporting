@@ -7,20 +7,22 @@
       <div v-else class="report">
          <BarChart :chartData="reportStore.pageTimes" :options="options"/>
          <table class="raw-data">
-            <tr>
-               <th>Category</th>
-               <th>Units</th>
-               <th>Total Mins</th>
-               <th>Total Pages</th>
-               <th>Avg. Mins</th>
-            </tr>
-            <tr v-for="(r,idx) in reportStore.pageTimes.raw" :key="`raw${idx}`">
-               <td>{{r.category}}</td>
-               <td>{{r.units}}</td>
-               <td>{{r.totalMins}}</td>
-               <td>{{r.totalPages}}</td>
-               <td>{{r.avgPageTime}}</td>
-            </tr>
+            <tbody>
+               <tr>
+                  <th>Category</th>
+                  <th>Units</th>
+                  <th>Total Mins</th>
+                  <th>Total Pages</th>
+                  <th>Avg. Mins</th>
+               </tr>
+               <tr v-for="(r,idx) in reportStore.pageTimes.raw" :key="`raw${idx}`">
+                  <td>{{r.category}}</td>
+                  <td>{{r.units}}</td>
+                  <td>{{r.totalMins}}</td>
+                  <td>{{r.totalPages}}</td>
+                  <td>{{r.avgPageTime}}</td>
+               </tr>
+            </tbody>
          </table>
          <p class="error" v-if="reportStore.pageTimes.error">{{reportStore.pageTimes.error}}</p>
       </div>

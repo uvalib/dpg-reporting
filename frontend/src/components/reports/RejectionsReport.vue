@@ -3,51 +3,53 @@
       <h3>Rejections</h3>
       <div class="report">
          <table class="rejection-stats">
-            <tr>
-               <th class="top-header"></th>
-               <th class="top-header left-bar" colspan="5">Scans</th>
-               <th class="top-header left-bar" colspan="3">QA</th>
-            </tr>
-             <tr>
-               <th class="sub-header">
-                  <span>Staff</span>
-               </th>
-               <th class="left-bar sub-header">
-                  <span>Projects</span>
-               </th>
-               <th class="sub-header">
-                  <span>Images</span>
-               </th>
-               <th class="sub-header">
-                  <span>Rejects</span>
-               </th>
-               <th class="sub-header">
-                  <span>Project Rate</span>
-               </th>
-               <th class="sub-header">
-                  <span>Image Rate</span>
-               </th>
-               <th class="left-bar sub-header">
-                  <span>Projects</span>
-               </th>
-               <th class="sub-header">
-                  <span>Rejects</span>
-               </th>
-               <th class="sub-header">
-                  <span>Rate</span>
-               </th>
-            </tr>
-            <tr v-for="r in reportStore.rejections.data" :key="`reject${r.staffID}`">
-               <td class="left">{{r.staffName}}</td>
-               <td class="left-bar">{{r.scans.projects}}</td>
-               <td>{{r.scans.images}}</td>
-               <td>{{r.scans.rejections}}</td>
-               <td>{{r.scans.projectRate.toFixed(2)}}%</td>
-               <td>{{r.scans.imageRate.toFixed(2)}}%</td>
-               <td class="left-bar">{{r.qa.projects}}</td>
-               <td>{{r.qa.rejections}}</td>
-               <td>{{r.qa.rate.toFixed(2)}}%</td>
-            </tr>
+            <tbody>
+               <tr>
+                  <th class="top-header"></th>
+                  <th class="top-header left-bar" colspan="5">Scans</th>
+                  <th class="top-header left-bar" colspan="3">QA</th>
+               </tr>
+               <tr>
+                  <th class="sub-header">
+                     <span>Staff</span>
+                  </th>
+                  <th class="left-bar sub-header">
+                     <span>Projects</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Images</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Rejects</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Project Rate</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Image Rate</span>
+                  </th>
+                  <th class="left-bar sub-header">
+                     <span>Projects</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Rejects</span>
+                  </th>
+                  <th class="sub-header">
+                     <span>Rate</span>
+                  </th>
+               </tr>
+               <tr v-for="r in reportStore.rejections.data" :key="`reject${r.staffID}`">
+                  <td class="left">{{r.staffName}}</td>
+                  <td class="left-bar">{{r.scans.projects}}</td>
+                  <td>{{r.scans.images}}</td>
+                  <td>{{r.scans.rejections}}</td>
+                  <td>{{r.scans.projectRate.toFixed(2)}}%</td>
+                  <td>{{r.scans.imageRate.toFixed(2)}}%</td>
+                  <td class="left-bar">{{r.qa.projects}}</td>
+                  <td>{{r.qa.rejections}}</td>
+                  <td>{{r.qa.rate.toFixed(2)}}%</td>
+               </tr>
+            </tbody>
          </table>
          <p class="error" v-if="reportStore.rejections.error">{{reportStore.rejections.error}}</p>
       </div>

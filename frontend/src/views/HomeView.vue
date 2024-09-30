@@ -33,15 +33,17 @@
             </div>
             <div v-else class="scroller">
                <table>
-                  <tr>
-                     <th></th><th>Title</th><th>Thumbnail</th><th>Details</th>
-                  </tr>
-                  <tr v-for="(rec,idx) in statsStore.publishedStats.virgo" :key="`as${rec.id}`">
-                     <td class="num">{{idx+1}}.</td>
-                     <td class="title">{{rec.title}}</td>
-                     <td><img :src="rec.thumbURL"/></td>
-                     <td><a :href="rec.adminURL" target="_blank">Details</a></td>
-                  </tr>
+                  <tbody>
+                     <tr>
+                        <th></th><th>Title</th><th>Thumbnail</th><th>Details</th>
+                     </tr>
+                     <tr v-for="(rec,idx) in statsStore.publishedStats.virgo" :key="`as${rec.id}`">
+                        <td class="num">{{idx+1}}.</td>
+                        <td class="title">{{rec.title}}</td>
+                        <td><img :src="rec.thumbURL"/></td>
+                        <td><a :href="rec.adminURL" target="_blank">Details</a></td>
+                     </tr>
+                  </tbody>
                </table>
             </div>
          </div>
@@ -52,15 +54,17 @@
             </div>
             <div v-else class="scroller">
                <table>
-                  <tr>
-                     <th></th><th>Title</th><th>Details</th><th>Link</th>
-                  </tr>
-                  <tr v-for="(rec,idx) in statsStore.publishedStats.archivesSpace" :key="`as${rec.id}`">
-                     <td class="num">{{idx+1}}.</td>
-                     <td class="title">{{rec.title}}</td>
-                     <td><a :href="rec.adminURL" target="_blank">Details</a></td>
-                     <td><a :href="rec.externalURL" target="_blank">ArchivesSpace</a></td>
-                  </tr>
+                  <tbody>
+                     <tr>
+                        <th></th><th>Title</th><th>Details</th><th>Link</th>
+                     </tr>
+                     <tr v-for="(rec,idx) in statsStore.publishedStats.archivesSpace" :key="`as${rec.id}`">
+                        <td class="num">{{idx+1}}.</td>
+                        <td class="title">{{rec.title}}</td>
+                        <td><a :href="rec.adminURL" target="_blank">Details</a></td>
+                        <td><a :href="rec.externalURL" target="_blank">ArchivesSpace</a></td>
+                     </tr>
+                  </tbody>
                </table>
             </div>
          </div>

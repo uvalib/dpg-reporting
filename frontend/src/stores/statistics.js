@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 export const useStatsStore = defineStore('stats', {
 	state: () => ({
@@ -158,11 +158,11 @@ export const useStatsStore = defineStore('stats', {
 function getDateParam(rangeType, startDate, endDate) {
 	let dateParam = ""
 	if (rangeType == "before") {
-		dateParam = `BEFORE ${moment(startDate).format("YYYY-MM-DD")}`
+		dateParam = `BEFORE ${dayjs(startDate).format("YYYY-MM-DD")}`
 	} else if (rangeType == "after") {
-		dateParam = `AFTER ${moment(startDate).format("YYYY-MM-DD")}`
+		dateParam = `AFTER ${dayjs(startDate).format("YYYY-MM-DD")}`
 	} else {
-		dateParam = `${moment(startDate).format("YYYY-MM-DD")} TO ${moment(endDate).format("YYYY-MM-DD")}`
+		dateParam = `${dayjs(startDate).format("YYYY-MM-DD")} TO ${dayjs(endDate).format("YYYY-MM-DD")}`
 	}
 	return dateParam
 }

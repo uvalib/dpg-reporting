@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import moment from 'moment'
+import dayjs from 'dayjs'
 
 export const useReportStore = defineStore('report', {
 	state: () => ({
@@ -75,7 +75,7 @@ export const useReportStore = defineStore('report', {
          })
 		},
 		getProductivityReport( workflowID, start, end ) {
-			let url = `/api/reports/productivity?workflow=${workflowID}&start=${moment(start).format("YYYY-MM-DD")}&end=${moment(end).format("YYYY-MM-DD")}`
+			let url = `/api/reports/productivity?workflow=${workflowID}&start=${dayjs(start).format("YYYY-MM-DD")}&end=${dayjs(end).format("YYYY-MM-DD")}`
 			this.productivity.loading = true
 			axios.get(url).then(response => {
 				this.productivity.labels = response.data.types
@@ -91,7 +91,7 @@ export const useReportStore = defineStore('report', {
          })
 		},
 		getProblemsReport( workflowID, start, end ) {
-			let url = `/api/reports/problems?workflow=${workflowID}&start=${moment(start).format("YYYY-MM-DD")}&end=${moment(end).format("YYYY-MM-DD")}`
+			let url = `/api/reports/problems?workflow=${workflowID}&start=${dayjs(start).format("YYYY-MM-DD")}&end=${dayjs(end).format("YYYY-MM-DD")}`
 			this.problems.loading = true
 			axios.get(url).then(response => {
 				this.problems.labels = response.data.types
@@ -106,7 +106,7 @@ export const useReportStore = defineStore('report', {
          })
 		},
 		getPageTimesReport( workflowID, start, end ) {
-			let url = `/api/reports/pagetimes?workflow=${workflowID}&start=${moment(start).format("YYYY-MM-DD")}&end=${moment(end).format("YYYY-MM-DD")}`
+			let url = `/api/reports/pagetimes?workflow=${workflowID}&start=${dayjs(start).format("YYYY-MM-DD")}&end=${dayjs(end).format("YYYY-MM-DD")}`
 			this.pageTimes.loading = true
 			axios.get(url).then(response => {
 				this.pageTimes.labels.splice(0, this.pageTimes.labels.length)
@@ -129,7 +129,7 @@ export const useReportStore = defineStore('report', {
          })
 		},
 		getRejectionsReport( workflowID, start, end ) {
-			let url = `/api/reports/rejections?workflow=${workflowID}&start=${moment(start).format("YYYY-MM-DD")}&end=${moment(end).format("YYYY-MM-DD")}`
+			let url = `/api/reports/rejections?workflow=${workflowID}&start=${dayjs(start).format("YYYY-MM-DD")}&end=${dayjs(end).format("YYYY-MM-DD")}`
 			this.rejections.loading = true
 			axios.get(url).then(response => {
 				this.rejections.data = response.data
@@ -141,7 +141,7 @@ export const useReportStore = defineStore('report', {
          })
 		},
 		getRatesReport( workflowID, start, end ) {
-			let url = `/api/reports/rates?workflow=${workflowID}&start=${moment(start).format("YYYY-MM-DD")}&end=${moment(end).format("YYYY-MM-DD")}`
+			let url = `/api/reports/rates?workflow=${workflowID}&start=${dayjs(start).format("YYYY-MM-DD")}&end=${dayjs(end).format("YYYY-MM-DD")}`
 			this.rates.loading = true
 			axios.get(url).then(response => {
 				this.rates.data = response.data
