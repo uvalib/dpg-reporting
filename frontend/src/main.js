@@ -13,4 +13,6 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css'
 app.component('VueDatePicker', VueDatePicker)
 
+import "./assets/base.scss"
+
 app.mount('#app')

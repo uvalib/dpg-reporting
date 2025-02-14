@@ -40,7 +40,6 @@ onMounted( () => {
 
 
 <style lang="scss">
-@import "@/assets/base.scss";
 header {
    background-color: var(--uvalib-brand-blue);
    color: white;
